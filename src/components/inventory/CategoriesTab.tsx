@@ -110,6 +110,7 @@ export default function CategoriesTab({ onAddCategory, onEditCategory }: Categor
           Add Category
         </button>
       </div>
+      </div>
       <div className="flex flex-col gap-3">
         {categories?.map((cat) => (
           <div
