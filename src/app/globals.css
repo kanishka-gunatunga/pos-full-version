@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --menu-header-height: 72px;
+  --mobile-header-height: 56px;
+  --order-sidebar-top: var(--menu-header-height);
+  --order-sidebar-height: calc(100vh - var(--order-sidebar-top));
+  /* Theme primary - change this to update orange across the app */
+  --color-primary: #ea580c;
+  --color-primary-hover: #c2410c;
+  --color-primary-muted: #fff7ed;
+  /* Update shadow when changing --color-primary (matches primary at 30% opacity) */
+  --shadow-primary:
+    0px 4px 6px -4px color-mix(in srgb, var(--color-primary) 30%, transparent),
+    0px 10px 15px -3px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+@media (max-width: 767px) {
+  :root {
+    --order-sidebar-top: calc(var(--mobile-header-height) + var(--menu-header-height));
+    --order-sidebar-height: calc(100vh - var(--order-sidebar-top));
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-muted: var(--color-primary-muted);
+  --shadow-primary: var(--shadow-primary);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* Product card - responsive font-size only (use Tailwind for rest) */
+.product-card-category {
+  font-size: clamp(0.5rem, 0.55rem + 0.4vw, 0.75rem);
+}
+
+.product-card-addon-header {
+  font-size: clamp(0.625rem, 0.7rem + 0.4vw, 0.875rem);
+}
+
+.product-card-label {
+  font-size: clamp(0.5rem, 0.55rem + 0.3vw, 0.6875rem);
+}
+
+.product-card-variant-label {
+  font-size: clamp(0.5rem, 0.55rem + 0.3vw, 0.6875rem);
+}
+
+.product-card-price-small {
+  font-size: clamp(0.5rem, 0.55rem + 0.3vw, 0.6875rem);
+}
+
+.product-card-title {
+  font-size: clamp(0.8125rem, 0.9rem + 0.4vw, 1rem);
+}
+
+.product-card-price {
+  font-size: clamp(0.75rem, 0.8rem + 0.3vw, 0.9375rem);
+}
+
+.product-card-variant-text {
+  font-size: clamp(0.6875rem, 0.75rem + 0.3vw, 0.8125rem);
+}
+
+.product-card-total-price {
+  font-size: clamp(0.875rem, 0.95rem + 0.4vw, 1.125rem);
+}
+
+/* Selected variant name - force orange (overrides inherited/button styles) */
+.variant-name-selected {
+  color: #ea580c !important;
+}
+
+/* Quantity display - responsive font-size only */
+.quantity-display {
+  font-size: clamp(0.75rem, 0.8rem + 0.4vw, 1rem);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Login page background */
+.login-bg {
+  background-color: #1c1917;
+  background-image: url("/bg_image.png");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Subtle scrollbar - minimal, blends with UI */
+.scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+.scrollbar-subtle::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.scrollbar-subtle::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-subtle::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+.scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+.scrollbar-subtle::-webkit-scrollbar-thumb:active {
+  background: #94a3b8;
+}
+
+/* Badge amount scroll - overlay scrollbar = no extra height = text stays centered */
+.badge-amount-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+@supports (overflow-x: overlay) {
+  .badge-amount-scroll {
+    overflow-x: overlay;
+  }
+}
