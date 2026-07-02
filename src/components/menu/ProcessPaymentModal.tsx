@@ -152,7 +152,6 @@ export default function ProcessPaymentModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const cashApplied = Number.parseFloat(cashAmount || "0") || 0;
   const cardApplied = cards.reduce((sum, c) => sum + c.amount, 0);
   const voucherApplied = vouchers.reduce((sum, v) => sum + v.amount, 0);
   const hasCustomerForPoints = customerId != null;
@@ -161,6 +160,12 @@ export default function ProcessPaymentModal({
   const pointsNumRaw = Number.parseInt(pointsToUse || "0", 10) || 0;
   // pointsNum is what's in the input, but appliedPoints is what's confirmed
   const pointsApplied = appliedPoints * pointsRate;
+  
+  const enteredCash = Number.parseFloat(cashAmount || "0") || 0;
+  const balanceBeforeCash = Math.max(0, amountDue - (cardApplied + voucherApplied + pointsApplied));
+  const cashApplied = Math.min(enteredCash, balanceBeforeCash);
+  const changeToReturn = enteredCash > balanceBeforeCash ? enteredCash - balanceBeforeCash : 0;
+
   const totalPaid = cashApplied + cardApplied + voucherApplied + pointsApplied;
   const remaining = amountDue - totalPaid;
   const canConfirm = remaining <= ORDER_MONEY_EPS;
@@ -522,7 +527,7 @@ export default function ProcessPaymentModal({
                   </p>
                   <div className="rounded-[16px] border border-[#A4F4CF] bg-[#ECFDF5] p-6">
                     <label className="font-['Inter'] text-sm font-bold leading-5 tracking-normal text-[#314158]">
-                      Cash Amount ($)
+                      Cash Amount (Rs.)
                     </label>
                     <input
                       value={cashAmount}
@@ -530,14 +535,18 @@ export default function ProcessPaymentModal({
                       placeholder="0.00"
                       className="mt-3 w-full rounded-[14px] border-2 border-[#5EE9B5] bg-white px-6 py-4 font-['Inter'] text-[30px] font-bold leading-none tracking-normal text-[#0A0A0A] placeholder:text-[#0A0A0A80]"
                     />
+                    {changeToReturn > 0 && (
+                      <div className="mt-3 rounded-[10px] bg-[#ECFDF5] px-4 py-3 border border-[#34D399]">
+                        <p className="font-['Inter'] text-sm font-bold text-[#047857]">Change to give back: {formatRs(changeToReturn)}</p>
+                      </div>
+                    )}
                     <button
                       type="button"
-                      className="mt-3 w-full rounded-[14px] bg-[#009966] py-3 font-['Inter'] text-base font-bold leading-6 tracking-normal text-white transition-colors duration-300 ease-out"
+                      onClick={() => setCashAmount(balanceBeforeCash.toString())}
+                      className="mt-3 w-full rounded-[14px] bg-[#009966] py-3 font-['Inter'] text-base font-bold leading-6 tracking-normal text-white transition-colors duration-300 ease-out hover:bg-[#007a55]"
                     >
-                      Save Cash Balance (
-                      {formatRs(
-                        Math.max(amountDue - (cardApplied + voucherApplied + pointsApplied), 0)
-                      )}
+                      Fill Exact Balance (
+                      {formatRs(balanceBeforeCash)}
                       )
                     </button>
                   </div>
