@@ -157,7 +157,7 @@ export default function InventoryContent() {
                     onClick={() => {
                       const fileInput = document.createElement("input");
                       fileInput.type = "file";
-                      fileInput.accept = ".csv";
+                      fileInput.accept = ".xlsx";
                       fileInput.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0];
                         if (file) {
