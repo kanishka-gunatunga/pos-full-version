@@ -326,7 +326,7 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
       setCheckoutLockedOrderSlotId(localSlotId);
 
       const normalizedName = orderDetails.customerName.trim();
-      const total = subtotal + cartTaxAmount + serviceChargeAmount + deliveryChargeAmount;
+      const total = subtotal - manualDiscountAmount + cartTaxAmount + serviceChargeAmount + deliveryChargeAmount;
 
       const buildFingerprint = () => {
         const line = itemsWithDiscounts
@@ -462,7 +462,7 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
             customerId: orderDetails.customerId,
             totalAmount: total,
             orderType: "takeaway",
-            orderDiscount: 0,
+            orderDiscount: manualDiscountAmount,
             tax: cartTaxAmount,
             orderNote: activeOrderNote,
             kitchenNote: activeKitchenNote,
@@ -476,7 +476,7 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
             orderType: resolvedOrderType,
             tableId: orderDetails.tableId ?? null,
             tableNumber: orderDetails.tableNumber,
-            orderDiscount: 0,
+            orderDiscount: manualDiscountAmount,
             tax: cartTaxAmount,
             orderNote: activeOrderNote,
             kitchenNote: activeKitchenNote,
