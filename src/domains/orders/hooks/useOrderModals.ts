@@ -239,7 +239,7 @@ export function useOrderModals(options?: UseOrderModalsOptions) {
 
       const payload = {
         order_products: data.items.map((item) => ({
-          productId: Number(item.productId || item.id),
+          productId: item.productId ? Number(item.productId) : undefined,
           variationOptionId: item.variationOptionId ? Number(item.variationOptionId) : undefined,
           quantity: item.qty,
           unitPrice: item.price,
@@ -391,7 +391,7 @@ export function useOrderModals(options?: UseOrderModalsOptions) {
       if (!editOrderModal) return null;
 
       const order_products = data.items.map((item) => ({
-        productId: Number(item.productId || item.id),
+        productId: item.productId ? Number(item.productId) : undefined,
         variationOptionId: item.variationOptionId ? Number(item.variationOptionId) : undefined,
         quantity: item.qty,
         unitPrice: item.price,
