@@ -6,6 +6,7 @@ import { Calendar, Clock, Layers, X } from "lucide-react";
 import NewOrderIcon from "@/components/icons/NewOrderIcon";
 import { toast } from "sonner";
 import { useOrder } from "@/contexts/OrderContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 function getFormattedDate() {
   const now = new Date();
@@ -45,6 +46,8 @@ export default function MenuPageHeader() {
     canCloseOrder,
     checkoutLockedOrderSlotId,
   } = useOrder();
+  const { user } = useAuth();
+  const branchLine = user?.branchName?.trim();
 
   const checkoutLockActive = checkoutLockedOrderSlotId != null;
 
@@ -66,9 +69,11 @@ export default function MenuPageHeader() {
             <h1 className="text-lg font-bold leading-[22.5px] tracking-normal text-[#1D293D]">
               Ahas Gawwa POS
             </h1>
-            <p className="text-[10px] mt-1 font-bold leading-[15px] tracking-[1px] uppercase text-[#90A1B9]">
-              MAHARAGAMA BRANCH
-            </p>
+            {branchLine ? (
+              <p className="mt-1 text-[10px] font-bold leading-[15px] tracking-[1px] uppercase text-[#90A1B9]">
+                {branchLine}
+              </p>
+            ) : null}
           </div>
         </div>
 
