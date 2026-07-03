@@ -159,6 +159,7 @@ const PromotionsContent = () => {
             {activeTab === "productDiscounts" && (
               <div className="rounded-[16px] border border-[#F1F5F9] bg-white p-6 shadow-sm">
                 <DiscountsTab 
+                  searchQuery={searchQuery}
                   onEdit={(discount) => {
                     setEditingDiscount(discount);
                     setIsDiscountModalOpen(true);

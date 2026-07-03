@@ -137,10 +137,14 @@ function DiscountCard({ offer, onEdit }: { offer: Discount; onEdit: (offer: Disc
 interface DiscountsTabProps {
   onEdit: (discount: Discount) => void;
   onAdd?: () => void;
+  searchQuery?: string;
 }
 
-export default function DiscountsTab({ onEdit, onAdd }: DiscountsTabProps) {
-  const { data: discounts, isLoading } = useGetAllDiscounts({ status: "all" });
+export default function DiscountsTab({ onEdit, onAdd, searchQuery }: DiscountsTabProps) {
+  const { data: discounts, isLoading } = useGetAllDiscounts({ 
+    status: "all",
+    ...(searchQuery ? { search: searchQuery } : {})
+  });
   const handleEdit = (offer: Discount) => {
     onEdit(offer);
   };
