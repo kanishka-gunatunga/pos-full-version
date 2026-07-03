@@ -1,11 +1,10 @@
 import VouchersPageContent from "./VouchersPageContent";
-import { MOCK_ISSUED_VOUCHERS, VOUCHER_PAGE_SUMMARY } from "@/domains/vouchers/mockData";
 
 export default function VouchersPage() {
   return (
     <VouchersPageContent
-      initialSummary={VOUCHER_PAGE_SUMMARY}
-      initialIssuedVouchers={MOCK_ISSUED_VOUCHERS}
+      initialSummary={{ totalActiveCount: 0, activeValueFormatted: 'Rs.0.00', redeemedCount: 0, redeemedValueFormatted: 'Rs.0.00' }}
+      initialIssuedVouchers={[]}
     />
   );
 }

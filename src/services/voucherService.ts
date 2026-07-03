@@ -28,3 +28,18 @@ export const updateVoucherTemplateStatus = async (
   const response = await axiosInstance.patch(`/voucher-templates/${id}/status`, { status });
   return response.data;
 };
+
+export const getIssuedVouchers = async () => {
+  const response = await axiosInstance.get("/issued-vouchers");
+  return response.data; // { data: IssuedVoucherRow[], summary: VoucherPageSummary }
+};
+
+export const updateIssuedVoucher = async (id: string, data: any) => {
+  const response = await axiosInstance.put(`/issued-vouchers/${id}`, data);
+  return response.data;
+};
+
+export const updateIssuedVoucherStatus = async (id: string, status: string) => {
+  const response = await axiosInstance.patch(`/issued-vouchers/${id}/status`, { status });
+  return response.data;
+};

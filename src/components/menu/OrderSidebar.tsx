@@ -53,7 +53,7 @@ const isVoucherLineItem = (item: OrderItem): boolean => {
 };
 
 const isMockOnlyLineItem = (item: OrderItem): boolean =>
-  item.itemType === "voucher" || item.itemType === "promotion";
+  item.itemType === "promotion";
 
 function loadPendingPaymentFlow(): PaymentFlowState | null {
   if (typeof window === "undefined") return null;

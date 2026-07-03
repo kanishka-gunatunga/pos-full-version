@@ -21,6 +21,12 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { ROUTES } from "@/lib/constants";
 import type { IssuedVoucherRow, VoucherPageSummary } from "@/domains/vouchers/types";
+import { toast } from "sonner";
+import {
+  getIssuedVouchers,
+  updateIssuedVoucher,
+  updateIssuedVoucherStatus
+} from "@/services/voucherService";
 
 type StatusFilter = "all" | IssuedVoucherRow["status"];
 
@@ -67,10 +73,27 @@ export default function VouchersPageContent({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [issuedVouchers, setIssuedVouchers] = useState<IssuedVoucherRow[]>(initialIssuedVouchers);
+  const [summary, setSummary] = useState<VoucherPageSummary>(initialSummary);
   const [editingVoucher, setEditingVoucher] = useState<IssuedVoucherRow | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editSession, setEditSession] = useState(0);
   const [statusTarget, setStatusTarget] = useState<IssuedVoucherRow | null>(null);
+
+  const fetchVouchers = async () => {
+    try {
+      const res = await getIssuedVouchers();
+      if (res && res.data) {
+        setIssuedVouchers(res.data);
+        if (res.summary) setSummary(res.summary);
+      }
+    } catch (err) {
+      toast.error("Failed to fetch issued vouchers");
+    }
+  };
+
+  useEffect(() => {
+    fetchVouchers();
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 350);
@@ -96,22 +119,25 @@ export default function VouchersPageContent({
     setEditingVoucher(null);
   };
 
-  const handleSaveValidity = (voucherId: string, nextMonths: 6 | 12) => {
-    setIssuedVouchers((prev) =>
-      prev.map((row) => {
-        if (row.id !== voucherId) return row;
-        const currentMonths = getValidityMonths(row.validityLabel);
-        if (currentMonths === 12 && nextMonths === 6) return row;
-        if (currentMonths === nextMonths) return row;
-        const expiryDate =
-          currentMonths === 6 && nextMonths === 12 ? addMonthsToYmd(row.expiryDate, 6) : row.expiryDate;
-        return {
-          ...row,
-          validityLabel: nextMonths === 6 ? "6 months" : "12 months",
-          expiryDate,
-        };
-      })
-    );
+  const handleSaveValidity = async (voucherId: string, nextMonths: 6 | 12) => {
+    const row = issuedVouchers.find((r) => r.id === voucherId);
+    if (!row) return;
+    const currentMonths = getValidityMonths(row.validityLabel);
+    if (currentMonths === 12 && nextMonths === 6) return;
+    if (currentMonths === nextMonths) return;
+    const expiryDate =
+      currentMonths === 6 && nextMonths === 12 ? addMonthsToYmd(row.expiryDate, 6) : row.expiryDate;
+    
+    try {
+      await updateIssuedVoucher(voucherId, {
+        validityLabel: nextMonths === 6 ? "6 months" : "12 months",
+        expiryDate
+      });
+      toast.success("Voucher validity updated");
+      fetchVouchers();
+    } catch (err) {
+      toast.error("Failed to update validity");
+    }
   };
 
   const nextStatusLabel =
@@ -121,19 +147,17 @@ export default function VouchersPageContent({
         ? "active"
         : null;
 
-  const handleConfirmStatusToggle = () => {
+  const handleConfirmStatusToggle = async () => {
     if (!statusTarget || !nextStatusLabel) return;
-    setIssuedVouchers((prev) =>
-      prev.map((row) =>
-        row.id === statusTarget.id
-          ? {
-              ...row,
-              status: nextStatusLabel,
-            }
-          : row
-      )
-    );
-    setStatusTarget(null);
+    try {
+      await updateIssuedVoucherStatus(statusTarget.id, nextStatusLabel);
+      toast.success("Voucher status updated");
+      fetchVouchers();
+    } catch (err) {
+      toast.error("Failed to update status");
+    } finally {
+      setStatusTarget(null);
+    }
   };
 
   const filteredRows = useMemo(() => {
@@ -182,25 +206,25 @@ export default function VouchersPageContent({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <VoucherStatCard
               label="Total Active"
-              value={String(initialSummary.totalActiveCount)}
+              value={String(summary.totalActiveCount)}
               icon={<Gift className="h-5 w-5 text-[#007A55]" aria-hidden />}
               iconWrapClassName="bg-[#D0FAE5]"
             />
             <VoucherStatCard
               label="Active Value"
-              value={initialSummary.activeValueFormatted}
+              value={summary.activeValueFormatted}
               icon={<DollarSign className="h-5 w-5 text-[#155DFC]" aria-hidden />}
               iconWrapClassName="bg-[#DBEAFE]"
             />
             <VoucherStatCard
               label="Redeemed"
-              value={String(initialSummary.redeemedCount)}
+              value={String(summary.redeemedCount)}
               icon={<Package className="h-5 w-5 text-[#7C3AED]" aria-hidden />}
               iconWrapClassName="bg-[#EDE9FE]"
             />
             <VoucherStatCard
               label="Redeemed Value"
-              value={initialSummary.redeemedValueFormatted}
+              value={summary.redeemedValueFormatted}
               icon={<DollarSign className="h-5 w-5 text-[#F54900]" aria-hidden />}
               iconWrapClassName="bg-[#FFEDD4]"
             />
