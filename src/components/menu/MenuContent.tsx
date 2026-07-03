@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, type MutableRefObject } from "react";
+import { useState, useMemo, useEffect, useCallback, type MutableRefObject } from "react";
 import { Search, Loader2 } from "lucide-react";
 import ProductCard from "./ProductCard";
 import { useGetParentCategories, useGetSubCategories } from "@/hooks/useCategory";
@@ -17,6 +17,8 @@ import { useGetComboPacksByBranch } from "@/hooks/useComboPack";
 import { useGetBogoPromotionsByBranch } from "@/hooks/useBogoPromotion";
 import type { ComboPack } from "@/types/comboPack";
 import type { BogoPromotion } from "@/types/bogoPromotion";
+import { getVoucherTemplates } from "@/services/voucherService";
+import type { CreatedVoucherTemplate } from "@/domains/vouchers/types";
 
 function useColumnCount() {
   const [cols, setCols] = useState(4);
@@ -48,6 +50,30 @@ const DUMMY_VOUCHER_ITEMS: MenuItem[] = [
   { id: "voucher-8000", productId: 910005, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 8000, image: "/voucer-img.png" },
   { id: "voucher-10000", productId: 910006, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 10000, image: "/voucer-img.png" },
 ];
+
+/**
+ * Parse the numeric value from a formatted string like "Rs.2000.00" or "2,000"
+ */
+function parseVoucherPrice(valueFormatted: string): number {
+  const cleaned = valueFormatted.replace(/[^0-9.]/g, "");
+  return parseFloat(cleaned) || 0;
+}
+
+function mapTemplatesToMenuItems(templates: CreatedVoucherTemplate[]): MenuItem[] {
+  return templates
+    .filter((t) => t.status === "active")
+    .map((t, idx) => ({
+      id: `vt-${t.id}`,
+      productId: 910000 + idx + 1, // stable synthetic productId
+      name: `Gift Voucher`,
+      category: "Vouchers",
+      subCategory: "All",
+      price: parseVoucherPrice(t.valueFormatted),
+      image: t.imageUrl && !t.imageUrl.startsWith("blob:") ? t.imageUrl : "/voucer-img.png",
+      // Store templateId so order creation can reference it
+      voucherTemplateId: t.id,
+    }));
+}
 
 const DUMMY_PROMOTION_ITEMS: MenuItem[] = [
   {
@@ -122,10 +148,31 @@ export default function MenuContent({
   const [activeMainTab, setActiveMainTab] = useState<"Categories" | "Vouchers" | "Promotions">("Categories");
   const [promoFilter, setPromoFilter] = useState<"All" | "Combo" | "BOGO">("All");
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [voucherTemplates, setVoucherTemplates] = useState<CreatedVoucherTemplate[]>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
 
   useEffect(() => {
     menuSurfaceRef.current = menuSurface;
   }, [menuSurface, menuSurfaceRef]);
+
+  // Fetch real voucher templates when the voucher tab becomes active
+  const fetchVoucherTemplates = useCallback(async () => {
+    setIsLoadingTemplates(true);
+    try {
+      const data = await getVoucherTemplates();
+      setVoucherTemplates(data);
+    } catch {
+      // fall back to dummy items silently
+    } finally {
+      setIsLoadingTemplates(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (menuSurface === "vouchers") {
+      fetchVoucherTemplates();
+    }
+  }, [menuSurface, fetchVoucherTemplates]);
 
   const { data: categories = [], isLoading: isLoadingCats } = useGetParentCategories("active");
 
@@ -162,10 +209,13 @@ export default function MenuContent({
   }, [products, branchId, allModifications]);
 
   const voucherMenuItems = useMemo(() => {
+    const fromTemplates = mapTemplatesToMenuItems(voucherTemplates);
+    if (fromTemplates.length > 0) return fromTemplates;
+    // Fall back to products-based approach, then dummy items
     const mapped = mapProductsToMenuItems(voucherCatalog, branchId, allModifications);
     const filtered = mapped.filter(isVoucherMenuItem);
     return filtered.length > 0 ? filtered : DUMMY_VOUCHER_ITEMS;
-  }, [voucherCatalog, branchId, allModifications]);
+  }, [voucherTemplates, voucherCatalog, branchId, allModifications]);
 
   const voucherPriceOptions = useMemo(() => {
     const s = new Set<number>();
@@ -313,7 +363,7 @@ export default function MenuContent({
 
   const isLoadingMain =
     menuSurface === "menu" && (isLoadingCats || isLoadingSubCats || isLoadingProducts);
-  const isLoadingVouchers = menuSurface === "vouchers" && isLoadingVoucherCatalog;
+  const isLoadingVouchers = menuSurface === "vouchers" && (isLoadingVoucherCatalog || isLoadingTemplates);
 
 
 

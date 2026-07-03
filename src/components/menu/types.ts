@@ -23,6 +23,7 @@ export type MenuItem = {
   description?: string;
   barcode?: string;
   isOffer?: boolean;
+  voucherTemplateId?: string;
   variants?: ProductVariant[];
   addOns?: ProductAddOn[];
   bundleItems?: {
