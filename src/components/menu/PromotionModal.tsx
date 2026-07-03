@@ -211,10 +211,6 @@ export default function PromotionModal({
 
     if (augmentedPromoInfo.type === "combo" && augmentedPromoInfo.items) {
         augmentedPromoInfo.items.slice(1).forEach(i => {
-            modifications.push({
-                modificationId: i.productId,
-                price: 0
-            });
             if (!addOnsList.includes(i.name)) {
                 addOnsList.push(i.name);
             }
