@@ -13,6 +13,9 @@ import type { GiftVoucherSavePayload } from "@/components/vouchers/CreateGiftVou
 import { useAuth } from "@/contexts/AuthContext";
 import { ROUTES } from "@/lib/constants";
 import type { CreatedVoucherTemplate } from "@/domains/vouchers/types";
+import { toast } from "sonner";
+import { uploadImage } from "@/services/uploadService";
+import { getVoucherTemplates, createVoucherTemplate, updateVoucherTemplate, updateVoucherTemplateStatus } from "@/services/voucherService";
 
 export default function CreatedVouchersPageContent({
   initialTemplates,
@@ -27,43 +30,18 @@ export default function CreatedVouchersPageContent({
   const [editingTemplate, setEditingTemplate] = useState<CreatedVoucherTemplate | null>(null);
   const [statusTarget, setStatusTarget] = useState<CreatedVoucherTemplate | null>(null);
 
-  useEffect(() => {
-    setTemplates(initialTemplates);
-  }, [initialTemplates]);
-
-  const handleSaveVoucher = useCallback((data: GiftVoucherSavePayload) => {
-    const validityLabel = data.validityMonths === 6 ? "6 months" : "12 months";
-    if (data.templateId) {
-      setTemplates((prev) =>
-        prev.map((t) => {
-          if (t.id !== data.templateId) return t;
-          const imageUrl =
-            data.imageFile !== null ? URL.createObjectURL(data.imageFile) : t.imageUrl;
-          return {
-            ...t,
-            valueFormatted: data.valueFormatted,
-            validityLabel,
-            imageUrl,
-          };
-        })
-      );
-    } else {
-      const imageUrl =
-        data.imageFile !== null
-          ? URL.createObjectURL(data.imageFile)
-          : "/product-placeholder.svg";
-      setTemplates((prev) => [
-        {
-          id: crypto.randomUUID(),
-          valueFormatted: data.valueFormatted,
-          imageUrl,
-          validityLabel,
-          status: "active",
-        },
-        ...prev,
-      ]);
+  const fetchTemplates = useCallback(async () => {
+    try {
+      const data = await getVoucherTemplates();
+      setTemplates(data);
+    } catch (err) {
+      toast.error("Failed to fetch voucher templates");
     }
   }, []);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
 
   const closeVoucherModal = useCallback(() => {
     setVoucherModalOpen(false);
@@ -76,6 +54,33 @@ export default function CreatedVouchersPageContent({
     setVoucherModalOpen(true);
   }, []);
 
+  const handleSaveVoucher = useCallback(async (data: GiftVoucherSavePayload) => {
+    try {
+      let imageUrl = editingTemplate?.imageUrl || "";
+      if (data.imageFile) {
+        const uploadRes = await uploadImage(data.imageFile);
+        imageUrl = uploadRes.url;
+      }
+
+      const validityLabel = data.validityMonths === 6 ? "6 months" : "12 months";
+      const payload = {
+        valueFormatted: data.valueFormatted,
+        validityLabel,
+        imageUrl,
+      };
+
+      if (data.templateId) {
+        await updateVoucherTemplate(data.templateId, payload);
+      } else {
+        await createVoucherTemplate(payload);
+      }
+      fetchTemplates();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save voucher template");
+    }
+  }, [editingTemplate, fetchTemplates]);
+
   const nextStatusLabel =
     statusTarget?.status === "active"
       ? "inactive"
@@ -83,20 +88,19 @@ export default function CreatedVouchersPageContent({
         ? "active"
         : null;
 
-  const handleConfirmStatusToggle = useCallback(() => {
+  const handleConfirmStatusToggle = useCallback(async () => {
     if (!statusTarget || !nextStatusLabel) return;
-    setTemplates((prev) =>
-      prev.map((t) =>
-        t.id === statusTarget.id
-          ? {
-              ...t,
-              status: nextStatusLabel,
-            }
-          : t
-      )
-    );
-    setStatusTarget(null);
-  }, [statusTarget, nextStatusLabel]);
+    try {
+      await updateVoucherTemplateStatus(statusTarget.id, nextStatusLabel);
+      toast.success(`Voucher marked as ${nextStatusLabel}`);
+      fetchTemplates();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update voucher status");
+    } finally {
+      setStatusTarget(null);
+    }
+  }, [statusTarget, nextStatusLabel, fetchTemplates]);
 
   useEffect(() => {
     if (isCashier) router.replace(ROUTES.DASHBOARD_MENU);
