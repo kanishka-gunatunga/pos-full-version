@@ -424,11 +424,13 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
 
           const isBundleLine = item.promotionType === "COMBO";
           const isBogoLine = item.promotionType === "BOGO";
+          const isVoucherLine = item.itemType === "voucher";
 
           return {
+            // Voucher lines have no real productId (synthetic id) — omit to avoid FK failure.
             // Bundle lines are identified solely by productBundleId on the backend.
-            ...(isBundleLine ? {} : { productId: item.productId }),
-            ...(hasVariationOption && !isBundleLine
+            ...(!isBundleLine && !isVoucherLine ? { productId: item.productId } : {}),
+            ...(hasVariationOption && !isBundleLine && !isVoucherLine
               ? { variationOptionId: item.variationOptionId }
               : {}),
             quantity: item.qty,
@@ -445,6 +447,8 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
               : {}),
             ...(isBogoLine && item.promotionId ? { bogoPromotionId: item.promotionId } : {}),
             ...(isBundleLine && item.promotionId ? { productBundleId: item.promotionId } : {}),
+            // Tag voucher lines so the backend can identify them without a productId
+            ...(isVoucherLine ? { itemType: "voucher" } : {}),
             ...(item.recipientName || item.recipientMobile
               ? {
                   notes: `Recipient${item.recipientName ? `: ${item.recipientName}` : ""}${
