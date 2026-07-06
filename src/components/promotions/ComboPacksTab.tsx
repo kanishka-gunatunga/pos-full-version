@@ -17,6 +17,7 @@ import {
   useActivateComboPack,
   useDeactivateComboPack,
 } from "@/hooks/useComboPack";
+import { useGetAllBranches } from "@/hooks/useBranch";
 import { ComboPack } from "@/types/comboPack";
 import { format } from "date-fns";
 import Image from "next/image";
@@ -29,9 +30,11 @@ interface ComboPacksTabProps {
 
 function ComboPackCard({
   combo,
+  totalBranchesCount,
   onEdit,
 }: {
   combo: ComboPack;
+  totalBranchesCount: number;
   onEdit: (combo: ComboPack) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -104,8 +107,10 @@ function ComboPackCard({
 
   const branchesLabel =
     combo.branches && combo.branches.length > 0
-      ? combo.branches.map((b) => b.branch?.name || "Unknown Branch").join(", ")
-      : "No branches assigned";
+      ? combo.branches.length === totalBranchesCount
+        ? "All Branches"
+        : combo.branches.map((b) => b.branch?.name || "Unknown Branch").join(", ")
+      : "All Branches";
 
   return (
     <div className="rounded-2xl border border-[#F1F5F9] bg-white shadow-sm overflow-hidden transition-all duration-300">
@@ -255,6 +260,8 @@ export default function ComboPacksTab({
   onEdit
 }: ComboPacksTabProps) {
   const { data: combos = [], isLoading, isError } = useGetAllComboPacks("all");
+  const { data: branches = [] } = useGetAllBranches("active");
+  const totalBranchesCount = branches.length;
 
   const filteredCombos = combos.filter(combo =>
     combo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -294,6 +301,7 @@ export default function ComboPacksTab({
         <ComboPackCard
           key={combo.id}
           combo={combo}
+          totalBranchesCount={totalBranchesCount}
           onEdit={onEdit}
         />
       ))}
