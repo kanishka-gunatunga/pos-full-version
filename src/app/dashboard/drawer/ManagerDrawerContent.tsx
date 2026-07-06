@@ -821,19 +821,19 @@ export default function ManagerDrawerContent() {
                   <th className="w-[7%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     End Time
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Initial
                   </th>
-                  <th className="w-[10%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[10%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Cash Sales
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Cash Outs
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Expected
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Actual
                   </th>
                   <th className="w-[10%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
