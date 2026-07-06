@@ -68,12 +68,9 @@ export async function adjustInitialAmount(params: {
   const { currentAmount, newAmount, reason, passcode } = params;
   const diff = newAmount - currentAmount;
   if (Math.abs(diff) < 0.01) return;
-  const description = reason.trim() ? `Initial amount correction: ${reason.trim()}` : "Initial amount correction";
-  if (diff > 0) {
-    await cashAction({ type: "add", amount: diff, description, passcode });
-  } else {
-    await cashAction({ type: "remove", amount: Math.abs(diff), description, passcode });
-  }
+  await axiosInstance.post("/sessions/adjust-initial", { currentAmount, newAmount, reason, passcode }, {
+    skipAuthRedirectOn401: true,
+  });
 }
 
 function parseBalance(value: unknown): number {
@@ -153,7 +150,7 @@ function classifyDrawerTransaction(row: Record<string, unknown>): "sale" | "out"
   if (amount <= 0) return null;
   // Opening / initial float — not a cash sale for drawer KPIs
   if (
-    type === "add" &&
+    (type === "add" || type === "remove") &&
     (desc.includes("opening") ||
       desc.includes("initial") ||
       desc.includes("start balance") ||
