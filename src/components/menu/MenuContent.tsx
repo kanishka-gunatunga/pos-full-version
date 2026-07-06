@@ -370,18 +370,22 @@ export default function MenuContent({
   const sectionedPromotions = useMemo(() => {
     const groups: { title: string; items: MenuItem[] }[] = [];
 
-    const comboItems = promotionItems.filter(i => i.category === "Combo Packs");
+    const filteredPromotions = promotionItems.filter(
+      (item) => item.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const comboItems = filteredPromotions.filter(i => i.category === "Combo Packs");
     if (comboItems.length > 0) {
       groups.push({ title: "Combo Packs", items: comboItems });
     }
 
-    const bogoItems = promotionItems.filter(i => i.category === "BOGO");
+    const bogoItems = filteredPromotions.filter(i => i.category === "BOGO");
     if (bogoItems.length > 0) {
       groups.push({ title: "BOGO", items: bogoItems });
     }
 
     return groups;
-  }, [promotionItems]);
+  }, [promotionItems, search]);
 
 
 
@@ -393,7 +397,7 @@ export default function MenuContent({
           <input
             type="text"
             placeholder={
-              menuSurface === "promotions" ? "Search promotions..." : "Search menu items..."
+              activeMainTab === "Promotions" ? "Search promotions..." : "Search menu items..."
             }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
