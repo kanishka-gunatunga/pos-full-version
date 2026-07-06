@@ -43,3 +43,8 @@ export const updateIssuedVoucherStatus = async (id: string, status: string) => {
   const response = await axiosInstance.patch(`/issued-vouchers/${id}/status`, { status });
   return response.data;
 };
+
+export const validateVoucher = async (code: string) => {
+  const response = await axiosInstance.get(`/issued-vouchers/validate?code=${encodeURIComponent(code)}`);
+  return response.data; // { id, code, amount, status }
+};

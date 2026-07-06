@@ -10,6 +10,7 @@ import {
 } from "@/domains/orders/orderCollectionAmount";
 import { useGetLoyaltyPoints } from "@/hooks/useCustomer";
 import { createPayment } from "@/services/paymentService";
+import { validateVoucher } from "@/services/voucherService";
 import { CreatePaymentPayload, IndividualPaymentPayload } from "@/types/payment";
 
 const formatRs = (n: number) =>
@@ -187,16 +188,6 @@ export default function ProcessPaymentModal({
     toast.success(`${num} points applied (Rs.${value.toFixed(2)})`);
   };
 
-  const voucherCodeMap = useMemo(
-    () => ({
-      "GV25-ABCD-1234": 5000,
-      "BX25-ABCD-1234": 8000,
-      GV25: 5000,
-      BX25: 8000,
-    }),
-    []
-  );
-
   const getCloseAction = () => {
     if (isSubmitting) return;
     onClose();
@@ -228,14 +219,27 @@ export default function ProcessPaymentModal({
     resetCardInputs();
   };
 
-  const handleRedeemVoucher = () => {
+  const handleRedeemVoucher = async () => {
     const code = voucherCode.trim().toUpperCase();
     if (!code) return toast.error("Enter voucher/promo code.");
     if (vouchers.some((v) => v.code === code)) return toast.error("Voucher already applied.");
-    const amount = voucherCodeMap[code as keyof typeof voucherCodeMap] ?? 0;
-    if (amount <= 0) return toast.error("Invalid voucher code.");
-    setVouchers((prev) => [...prev, { id: crypto.randomUUID(), code, amount }]);
-    setVoucherCode("");
+    
+    try {
+      const data = await validateVoucher(code);
+      if (data.status !== "active") {
+        toast.error(`Voucher is ${data.status}.`);
+        return;
+      }
+      if (data.amount <= 0) {
+         toast.error("Voucher has no value.");
+         return;
+      }
+      setVouchers((prev) => [...prev, { id: crypto.randomUUID(), code: data.code || code, amount: data.amount }]);
+      setVoucherCode("");
+      toast.success("Voucher applied successfully.");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Invalid voucher code.");
+    }
   };
 
   const handleConfirmPayment = async () => {
