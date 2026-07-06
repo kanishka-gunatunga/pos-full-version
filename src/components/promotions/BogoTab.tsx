@@ -165,9 +165,9 @@ export default function BogoTab({ searchQuery = "", onEdit }: BogoTabProps) {
   const filteredData = (bogoPromotions || []).filter((promo) => {
     const q = searchQuery.toLowerCase();
     return (
-      promo.name?.toLowerCase().includes(q) ||
-      promo.buyProduct?.name?.toLowerCase().includes(q) ||
-      promo.getProduct?.name?.toLowerCase().includes(q)
+      (promo.name?.toLowerCase() || "").includes(q) ||
+      (promo.buyProduct?.name?.toLowerCase() || "").includes(q) ||
+      (promo.getProduct?.name?.toLowerCase() || "").includes(q)
     );
   });
 

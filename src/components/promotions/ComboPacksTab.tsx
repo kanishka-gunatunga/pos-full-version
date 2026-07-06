@@ -264,8 +264,8 @@ export default function ComboPacksTab({
   const totalBranchesCount = branches.length;
 
   const filteredCombos = combos.filter(combo =>
-    combo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    combo.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    (combo.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (combo.description?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {
