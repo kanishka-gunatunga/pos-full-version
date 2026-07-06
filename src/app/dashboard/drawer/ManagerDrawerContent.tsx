@@ -981,7 +981,7 @@ export default function ManagerDrawerContent() {
                 </h3>
               </div>
               <div className="space-y-3 font-['Inter']">
-                <div className="flex h-14 w-full max-w-[399px] items-center justify-between rounded-2xl bg-[#F8FAFC] px-4">
+                <div className="flex h-14 w-full items-center justify-between rounded-2xl bg-[#F8FAFC] px-4">
                   <span className="font-['Inter'] text-sm font-normal leading-5 text-[#62748E]">
                     Session Started
                   </span>
@@ -989,7 +989,7 @@ export default function ManagerDrawerContent() {
                     {sessionData?.startedAt ?? activeSessionDetail?.startedAt ?? "—"}
                   </span>
                 </div>
-                <div className="flex h-14 w-full max-w-[399px] items-center justify-between gap-2 rounded-2xl bg-[#F8FAFC] px-4">
+                <div className="flex h-14 w-full items-center justify-between gap-2 rounded-2xl bg-[#F8FAFC] px-4">
                   <span className="shrink-0 font-['Inter'] text-sm font-normal leading-5 text-[#62748E]">
                     Initial Amount
                   </span>
@@ -1013,7 +1013,7 @@ export default function ManagerDrawerContent() {
                     </button>
                   </div>
                 </div>
-                <div className="flex h-[58px] w-full max-w-[399px] items-center justify-between rounded-2xl border border-[#A4F4CF] bg-[#ECFDF5] px-4">
+                <div className="flex h-[58px] w-full items-center justify-between rounded-2xl border border-[#A4F4CF] bg-[#ECFDF5] px-4">
                   <span className="font-['Inter'] text-sm font-bold leading-5 text-[#007A55]">
                     Status
                   </span>
@@ -1073,7 +1073,7 @@ export default function ManagerDrawerContent() {
                 <button
                   type="button"
                   onClick={() => setIsCashOutModalOpen(true)}
-                  className="flex h-[60px] w-full max-w-[399px] items-center justify-between rounded-2xl border-2 border-[#FFD6A8] bg-[#FFF7ED] px-4 transition-all duration-300 ease-out hover:opacity-90"
+                  className="flex h-[60px] w-full items-center justify-between rounded-2xl border-2 border-[#FFD6A8] bg-[#FFF7ED] px-4 transition-all duration-300 ease-out hover:opacity-90"
                 >
                   <span className="flex items-center gap-2">
                     <svg
@@ -1121,7 +1121,7 @@ export default function ManagerDrawerContent() {
                 <button
                   type="button"
                   onClick={() => setIsCloseSessionModalOpen(true)}
-                  className="flex h-[60px] w-full max-w-[399px] items-center justify-between rounded-2xl border-2 border-[#FFC9C9] bg-[#FEF2F2] px-4 transition-all duration-300 ease-out hover:opacity-90"
+                  className="flex h-[60px] w-full items-center justify-between rounded-2xl border-2 border-[#FFC9C9] bg-[#FEF2F2] px-4 transition-all duration-300 ease-out hover:opacity-90"
                 >
                   <span className="flex items-center gap-2">
                     <svg
@@ -1162,7 +1162,7 @@ export default function ManagerDrawerContent() {
                 <button
                   type="button"
                   onClick={() => setIsCloseDrawerModalOpen(true)}
-                  className="flex h-[60px] w-full max-w-[399px] items-center justify-between rounded-2xl border-2 border-[#FFC9EF] bg-[#FEF2FC] px-4 transition-all duration-300 ease-out hover:opacity-90"
+                  className="flex h-[60px] w-full items-center justify-between rounded-2xl border-2 border-[#FFC9EF] bg-[#FEF2FC] px-4 transition-all duration-300 ease-out hover:opacity-90"
                 >
                   <span className="flex items-center gap-2">
                     <svg
@@ -1233,7 +1233,7 @@ export default function ManagerDrawerContent() {
                   cashOutHistory.map((entry, i) => (
                     <div
                       key={`${entry.dateTime}-${entry.amount}-${i}`}
-                      className="flex min-h-[78px] w-full max-w-[399px] items-center justify-between gap-2 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3"
+                      className="flex min-h-[78px] w-full items-center justify-between gap-2 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3"
                     >
                       <div className="min-w-0">
                         <p className="font-['Inter'] text-base font-bold leading-6 text-[#1D293D]">
