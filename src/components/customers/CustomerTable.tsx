@@ -60,7 +60,7 @@ export default function CustomerTable({
           <tbody className="divide-y divide-[#F1F5F9]">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
+                <td colSpan={9} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                     <p className="text-[14px] font-medium text-[#62748E]">Loading customers...</p>
@@ -69,7 +69,7 @@ export default function CustomerTable({
               </tr>
             ) : displayCustomers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
+                <td colSpan={9} className="px-6 py-12 text-center">
                   <p className="text-[14px] font-medium text-[#62748E]">
                     {searchTerm
                       ? "No customers found matching your search."
