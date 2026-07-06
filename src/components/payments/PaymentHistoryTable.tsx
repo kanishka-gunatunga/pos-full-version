@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, Banknote, Globe, Loader2 } from "lucide-react";
+import { CreditCard, Banknote, Globe, Loader2, Ticket, Star, SplitSquareHorizontal } from "lucide-react";
 import ProcessPaymentModal from "./ProcessPaymentModal";
 import { Payment } from "@/types/payment";
 import { readLineSettlementStatus } from "@/domains/orders/paymentRowFields";
@@ -78,11 +78,38 @@ export default function PaymentHistoryTable({ payments, isLoading }: PaymentHist
             <span className="text-[14px] font-bold text-[#45556C]">Cash</span>
           </div>
         );
+      case "voucher":
+        return (
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[#F1F5F9] bg-[#F8FAFC] text-[#8B5CF6]">
+              <Ticket className="h-4 w-4" />
+            </div>
+            <span className="text-[14px] font-bold text-[#45556C]">Voucher</span>
+          </div>
+        );
+      case "loyalty_points":
+        return (
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[#F1F5F9] bg-[#F8FAFC] text-[#F59E0B]">
+              <Star className="h-4 w-4" />
+            </div>
+            <span className="text-[14px] font-bold text-[#45556C]">Points</span>
+          </div>
+        );
+      case "split":
+        return (
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[#F1F5F9] bg-[#F8FAFC] text-[#3B82F6]">
+              <SplitSquareHorizontal className="h-4 w-4" />
+            </div>
+            <span className="text-[14px] font-bold text-[#45556C]">Split</span>
+          </div>
+        );
       default:
         return (
           <div className="flex items-center gap-3 text-[#94A3B8]">
             <Globe className="h-4 w-4" />
-            <span className="text-[14px] font-bold text-[#45556C]">{method || "Unknown"}</span>
+            <span className="text-[14px] font-bold text-[#45556C]">{method ? method.replace('_', ' ') : "Unknown"}</span>
           </div>
         );
     }
