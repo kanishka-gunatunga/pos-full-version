@@ -1,3 +1,6 @@
+import ServiceErrorPage from "@/components/ServiceErrorPage";
+import type { ErrorReason } from "@/components/ServiceErrorPage";
+
 /**
  * service-error/page.tsx
  *
@@ -6,32 +9,45 @@
  * The middleware rewrites failed requests to /service-error?reason=xxx
  * without redirecting (the browser URL stays unchanged).
  *
- * This page is excluded from middleware checks to prevent infinite loops.
- * It has NO dependency on the project's layout providers — it renders
- * its own complete UI so it works even if providers are broken.
- *
- * The `reason` query param maps to ServiceErrorPage's reason prop:
- *   env_missing     → Configuration Error
- *   api_unreachable → Service Unreachable
- *   api_error       → Server Error
- *   db_disconnected → Database Unavailable
- *   unknown         → Service Unavailable (default)
+ * We read the `searchParams` on the Server side because Next.js
+ * middleware rewrites don't pass rewritten query params to client-side
+ * hooks (like `useSearchParams`) after hydration.
  */
-import { Suspense } from "react";
-import ServiceErrorPageClient from "./ServiceErrorPageClient";
 
 export const metadata = {
     title: "Service Unavailable",
     description: "The service is currently unavailable. Please try again shortly.",
 };
 
-// Force dynamic so the reason searchParam is always read fresh
+// Force dynamic so the searchParams are always read fresh
 export const dynamic = "force-dynamic";
 
-export default function ServiceErrorRoute() {
-    return (
-        <Suspense fallback={null}>
-            <ServiceErrorPageClient />
-        </Suspense>
-    );
+const VALID_REASONS: ErrorReason[] = [
+    "env_missing",
+    "api_unreachable",
+    "api_error",
+    "db_disconnected",
+    "runtime",
+    "unknown",
+];
+
+function isValidReason(r: string | null): r is ErrorReason {
+    return VALID_REASONS.includes(r as ErrorReason);
+}
+
+export default async function ServiceErrorRoute({
+    searchParams,
+}: {
+    // Next.js 15 uses a Promise for searchParams
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    // Await the params on the server
+    const params = await searchParams;
+    
+    const rawReason = typeof params?.reason === "string" ? params.reason : null;
+    const msg = typeof params?.msg === "string" ? params.msg : undefined;
+
+    const reason: ErrorReason = isValidReason(rawReason) ? rawReason : "unknown";
+
+    return <ServiceErrorPage reason={reason} message={msg} />;
 }
