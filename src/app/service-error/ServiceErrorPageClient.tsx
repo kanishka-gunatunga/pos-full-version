@@ -3,10 +3,8 @@
 /**
  * ServiceErrorPageClient.tsx
  *
- * Client component that reads the `reason` query param from the URL
- * (set by middleware) and renders the appropriate error UI.
- *
- * Separated from page.tsx so useSearchParams can work inside Suspense.
+ * Reads `reason` and `msg` query params set by middleware and renders
+ * the appropriate error UI with a debug panel showing the exact cause.
  */
 
 import { useSearchParams } from "next/navigation";
@@ -29,7 +27,16 @@ function isValidReason(r: string | null): r is ErrorReason {
 export default function ServiceErrorPageClient() {
     const searchParams = useSearchParams();
     const rawReason = searchParams.get("reason");
+    const msg = searchParams.get("msg");
+
     const reason: ErrorReason = isValidReason(rawReason) ? rawReason : "unknown";
 
-    return <ServiceErrorPage reason={reason} />;
+    // Always show the message — it tells you exactly what failed.
+    // In production you can remove the `message` prop to hide it from end users.
+    return (
+        <ServiceErrorPage
+            reason={reason}
+            message={msg ?? undefined}
+        />
+    );
 }
