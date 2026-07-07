@@ -1,42 +1,27 @@
-/**
- * error.tsx — Next.js App Router Error Boundary
- *
- * Automatically catches:
- *  - Unhandled runtime JavaScript exceptions in any page/component
- *  - React render errors (component throws during render)
- *  - Hydration mismatches that cause crashes
- *
- * Next.js guarantees this file is used as the error boundary for all
- * routes inside app/. It must be a "use client" component.
- *
- * The `reset` function re-renders the subtree — use it for the retry button.
- * If the error is catastrophic, fall back to a hard reload.
- */
 "use client";
 
-import ServiceErrorPage from "@/components/ServiceErrorPage";
 import { useEffect } from "react";
 
-interface ErrorPageProps {
-    error: Error & { digest?: string };
-    reset: () => void;
-}
-
-export default function ErrorBoundary({ error, reset }: ErrorPageProps) {
+export default function ErrorBoundary({ error }: { error: Error }) {
     useEffect(() => {
-        // Log to your error tracking service here (Sentry, Datadog, etc.)
-        console.error("[Quick Seats] Runtime error caught by error.tsx:", error);
+        // Log the exact frontend runtime error to the console
+        console.error("[Health Gate] ❌ frontend_runtime_error:", error);
+        
+        // Set a short-lived cookie that the middleware looks for.
+        // It tells the middleware to intercept the request and show the 
+        // static site_unavailable.html page.
+        document.cookie = "qs-force-error=runtime_crash; path=/; max-age=5";
+        
+        // Redirect to the home page (as requested by the user).
+        // If already on the home page, reload it so middleware can intercept it.
+        if (window.location.pathname !== "/") {
+            window.location.href = "/";
+        } else {
+            window.location.reload();
+        }
     }, [error]);
 
-    return (
-        <ServiceErrorPage
-            reason="runtime"
-            message={
-                process.env.NODE_ENV === "development"
-                    ? `${error.message}${error.digest ? ` (digest: ${error.digest})` : ""}`
-                    : undefined
-            }
-            resetErrorBoundary={reset}
-        />
-    );
+    // We don't render anything because we're immediately redirecting
+    // to let the middleware handle serving the static HTML.
+    return null;
 }
