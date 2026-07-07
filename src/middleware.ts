@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { withAuth, type NextRequestWithAuth } from "next-auth/middleware";
 
-const HEALTH_ENDPOINT = `${process.env.NEXT_PUBLIC_API_URL}/health`;
+const HEALTH_ENDPOINT = `${process.env.NEXT_PUBLIC_API_URL}/api/health`;
 const HEALTH_CACHE_SECONDS = 30;
 const HEALTH_COOKIE = "qs-health-ok";
 const FORCE_ERROR_COOKIE = "qs-force-error";
