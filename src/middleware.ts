@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { withAuth } from "next-auth/middleware";
+import { withAuth, type NextRequestWithAuth } from "next-auth/middleware";
 
 const HEALTH_ENDPOINT = `${process.env.NEXT_PUBLIC_API_URL}/health`;
 const HEALTH_CACHE_SECONDS = 30;
 const HEALTH_COOKIE = "qs-health-ok";
 const FORCE_ERROR_COOKIE = "qs-force-error";
 
-async function middleware(request: NextRequest) {
+async function runHealthGate(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -15,7 +15,7 @@ async function middleware(request: NextRequest) {
     pathname.startsWith("/api/") ||
     pathname === "/site_unavailable.html"
   ) {
-    return NextResponse.next();
+    return undefined;
   }
 
   const forceError = request.cookies.get(FORCE_ERROR_COOKIE);
@@ -28,7 +28,7 @@ async function middleware(request: NextRequest) {
 
   const healthCookie = request.cookies.get(HEALTH_COOKIE);
   if (healthCookie?.value === "1") {
-    return NextResponse.next();
+    return undefined;
   }
 
   let isHealthy = true;
@@ -93,11 +93,15 @@ function serveStaticErrorPage(request: NextRequest) {
   );
 }
 
-export default withAuth(middleware, {
-  pages: {
-    signIn: "/",
-  },
-});
+export default async function middleware(request: NextRequest) {
+  const healthResponse = await runHealthGate(request);
+  if (healthResponse) return healthResponse;
+  return withAuth(request as NextRequestWithAuth, {
+    pages: {
+      signIn: "/",
+    },
+  });
+}
 
 export const config = {
   matcher: [
