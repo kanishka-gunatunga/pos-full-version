@@ -1,25 +1,29 @@
 /**
  * middleware.ts
  *
- * NextAuth + Backend Health Gate Middleware
+ * NextAuth + Backend Health Gate + Static Error Page
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 
+
 // =========================
 // Configuration
 // =========================
 
-const HEALTH_ENDPOINT = `${process.env.NEXT_PUBLIC_API_URL}/health`;
+const HEALTH_ENDPOINT =
+    `${process.env.NEXT_PUBLIC_API_URL}/health`;
 
 const HEALTH_CACHE_SECONDS = 30;
 
-const ERROR_ROUTE = "/service-error";
+const HEALTH_COOKIE = "qs-health-ok";
+
+const FORCE_ERROR_COOKIE = "qs-force-error";
+
+const ERROR_PAGE = "/site_unavailable.html";
 
 const TIMEOUT_MS = 5000;
-
-const HEALTH_COOKIE = "qs-health-ok";
 
 
 // =========================
@@ -33,13 +37,13 @@ export default withAuth(
 
 
         // -----------------------------------
-        // Skip internal routes
+        // Allow internal files and error page
         // -----------------------------------
 
         if (
-            pathname.startsWith(ERROR_ROUTE) ||
             pathname.startsWith("/_next") ||
-            pathname.startsWith("/api/")
+            pathname.startsWith("/api/") ||
+            pathname === ERROR_PAGE
         ) {
             return NextResponse.next();
         }
@@ -47,10 +51,33 @@ export default withAuth(
 
 
         // -----------------------------------
-        // Health Check FIRST
+        // Frontend forced error handling
         // -----------------------------------
 
-        const healthError = await runHealthCheck(request);
+        const forceError =
+            request.cookies.get(FORCE_ERROR_COOKIE);
+
+
+        if (forceError) {
+
+            console.error(
+                "[Health Gate] Frontend forced error:",
+                forceError.value
+            );
+
+
+            return serveStaticErrorPage(request);
+        }
+
+
+
+        // -----------------------------------
+        // Backend health check
+        // -----------------------------------
+
+        const healthError =
+            await runHealthCheck(request);
+
 
 
         if (healthError) {
@@ -60,6 +87,7 @@ export default withAuth(
 
 
         return NextResponse.next();
+
     },
     {
         pages: {
@@ -79,13 +107,12 @@ async function runHealthCheck(
 ): Promise<NextResponse | null> {
 
 
-    // -----------------------------------
-    // Check cached health cookie
-    // -----------------------------------
+    // Cache check
 
-    const healthCookie = request.cookies.get(
-        HEALTH_COOKIE
-    );
+    const healthCookie =
+        request.cookies.get(
+            HEALTH_COOKIE
+        );
 
 
     if (healthCookie?.value === "1") {
@@ -94,77 +121,73 @@ async function runHealthCheck(
 
 
 
-    // -----------------------------------
-    // Check environment variable
-    // -----------------------------------
+    // Environment check
 
     if (!process.env.NEXT_PUBLIC_API_URL) {
 
-        return rewriteToError(
-            request,
-            "env_missing",
-            "NEXT_PUBLIC_API_URL is missing."
+        return serveStaticErrorPage(
+            request
         );
     }
 
 
 
-    // -----------------------------------
-    // Call Backend Health API
-    // -----------------------------------
-
     try {
 
-        const controller = new AbortController();
+
+        const controller =
+            new AbortController();
 
 
-        const timeoutId = setTimeout(
-            () => controller.abort(),
-            TIMEOUT_MS
-        );
+        const timeoutId =
+            setTimeout(
+                () => controller.abort(),
+                TIMEOUT_MS
+            );
 
 
-        const response = await fetch(
-            HEALTH_ENDPOINT,
-            {
-                method: "GET",
-                headers: {
-                    Accept: "application/json",
-                },
-                cache: "no-store",
-                signal: controller.signal,
-            }
-        );
+
+        const response =
+            await fetch(
+                HEALTH_ENDPOINT,
+                {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                    },
+                    cache: "no-store",
+                    signal: controller.signal,
+                }
+            );
 
 
         clearTimeout(timeoutId);
 
 
 
-        // -----------------------------------
-        // HTTP Status Check
-        // -----------------------------------
-
         if (!response.ok) {
 
-            return rewriteToError(
-                request,
-                "api_error",
-                `Backend returned ${response.status} ${response.statusText}`
+
+            console.error(
+                "[Health Gate] API failed:",
+                response.status
             );
 
+
+            return serveStaticErrorPage(
+                request
+            );
         }
 
 
 
-        // -----------------------------------
-        // Database Status Check
-        // -----------------------------------
+        // Database check
 
         try {
 
-            const body =
-                await response.json() as Record<string, unknown>;
+
+            const body = (await response.json()) as Record<string, unknown>;
+
 
 
             const dbStatus =
@@ -180,10 +203,15 @@ async function runHealthCheck(
                 dbStatus !== "ok"
             ) {
 
-                return rewriteToError(
-                    request,
-                    "db_disconnected",
-                    `Database status: ${body.db}`
+
+                console.error(
+                    "[Health Gate] Database down:",
+                    body.db
+                );
+
+
+                return serveStaticErrorPage(
+                    request
                 );
 
             }
@@ -191,55 +219,27 @@ async function runHealthCheck(
 
         } catch {
 
-            // Backend alive but invalid JSON
-            // Treat as healthy
+            // ignore invalid JSON
 
         }
 
-
-
-        // -----------------------------------
-        // Health Passed
-        // -----------------------------------
-
-        const nextResponse = NextResponse.next();
-
-
-        nextResponse.cookies.set(
-            HEALTH_COOKIE,
-            "1",
-            {
-                maxAge: HEALTH_CACHE_SECONDS,
-                path: "/",
-                httpOnly: true,
-                sameSite: "strict",
-            }
-        );
 
 
         return null;
 
 
 
-    } catch (err: unknown) {
+    } catch(err) {
 
 
-        const isTimeout =
-            err instanceof Error &&
-            err.name === "AbortError";
+        console.error(
+            "[Health Gate] Backend unreachable:",
+            err
+        );
 
 
-
-        return rewriteToError(
-            request,
-            isTimeout
-                ? "api_timeout"
-                : "api_unreachable",
-            isTimeout
-                ? `Backend timeout after ${TIMEOUT_MS / 1000}s`
-                : err instanceof Error
-                    ? err.message
-                    : String(err)
+        return serveStaticErrorPage(
+            request
         );
 
     }
@@ -248,48 +248,57 @@ async function runHealthCheck(
 
 
 
-
 // =========================
-// Error Rewrite
+// Static Error Handler
 // =========================
 
-function rewriteToError(
-    request: NextRequest,
-    reason: string,
-    message?: string
+function serveStaticErrorPage(
+    request: NextRequest
 ) {
 
 
-    console.error(
-        `[Health Gate] ${reason}`,
-        message
-    );
+    const { pathname } =
+        request.nextUrl;
 
 
-    const url =
-        request.nextUrl.clone();
+
+    /*
+        If user is visiting:
+
+        /dashboard
+        /dashboard/users
+        /events/123
+
+        redirect them to homepage
+
+    */
+
+    if (pathname !== "/") {
 
 
-    url.pathname = ERROR_ROUTE;
-
-
-    url.searchParams.set(
-        "reason",
-        reason
-    );
-
-
-    if (message) {
-
-        url.searchParams.set(
-            "msg",
-            message
+        return NextResponse.redirect(
+            new URL(
+                "/",
+                request.url
+            )
         );
 
     }
 
 
-    return NextResponse.rewrite(url);
+
+    /*
+        Homepage request:
+        Replace normal app with static error page
+
+    */
+
+    return NextResponse.rewrite(
+        new URL(
+            ERROR_PAGE,
+            request.url
+        )
+    );
 
 }
 
@@ -302,8 +311,15 @@ function rewriteToError(
 export const config = {
 
     matcher: [
-        "/dashboard/:path*",
-        "/kitchen/:path*",
+        /*
+          Protect all pages except:
+          - next static
+          - images
+          - assets
+        */
+
+        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)).*)",
+
     ],
 
 };
