@@ -12,55 +12,40 @@ const TIMEOUT_MS = 5000;
 const HEALTH_COOKIE = "qs-health-ok";
 
 // =========================
-// NextAuth Middleware
-// =========================
-
-const authMiddleware = withAuth({
-  pages: {
-    signIn: "/",
-  },
-});
-
-// =========================
 // Main Middleware
 // =========================
 
-export default async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default withAuth(
+  async function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl;
 
-  // Skip Next.js internals and error page
-  if (
-    pathname.startsWith(ERROR_ROUTE) ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api/")
-  ) {
+    // Skip Next.js internals and error page
+    if (
+      pathname.startsWith(ERROR_ROUTE) ||
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/api/")
+    ) {
+      return NextResponse.next();
+    }
+
+    // -----------------------
+    // 1. Health Check FIRST
+    // -----------------------
+
+    const healthResponse = await runHealthCheck(request);
+
+    if (healthResponse) {
+      return healthResponse;
+    }
+
     return NextResponse.next();
+  },
+  {
+    pages: {
+      signIn: "/",
+    },
   }
-
-  // -----------------------
-  // 1. Health Check FIRST
-  // -----------------------
-
-  const healthResponse = await runHealthCheck(request);
-
-  if (healthResponse) {
-    return healthResponse;
-  }
-
-  // -----------------------
-  // 2. Then NextAuth
-  // -----------------------
-
-  const isProtected =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/kitchen");
-
-  if (isProtected) {
-    return authMiddleware(request);
-  }
-
-  return NextResponse.next();
-}
+);
 
 // =========================
 // Health Check
