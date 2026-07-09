@@ -23,7 +23,7 @@ export default function TableManagement() {
   const updateMutation = useUpdateTable();
   const deleteMutation = useDeleteTable();
 
-  const handleSaveTable = async (data: { table_name: string; status: TableStatus }) => {
+  const handleSaveTable = async (data: { table_name: string; status: TableStatus; branch_id?: number }) => {
     try {
       if (selectedTable) {
         await updateMutation.mutateAsync({ id: selectedTable.id, data });

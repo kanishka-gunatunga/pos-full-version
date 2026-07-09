@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Table, TableStatus } from "@/types/table";
+import { useGetAllBranches } from "@/hooks/useBranch";
+import { useGetMe } from "@/hooks/useUser";
 
 interface AddTableModalProps {
   onClose: () => void;
-  onSave: (data: { table_name: string; status: TableStatus }) => void | Promise<void>;
+  onSave: (data: { table_name: string; status: TableStatus; branch_id?: number }) => void | Promise<void>;
   initialData?: Table | null;
 }
 
@@ -14,9 +16,13 @@ export default function AddTableModal({ onClose, onSave, initialData }: AddTable
   const [formData, setFormData] = useState({
     table_name: initialData?.table_name || "",
     status: initialData?.status || "available" as TableStatus,
+    branch_id: initialData?.branch_id || undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { data: user } = useGetMe();
+  const { data: branches = [] } = useGetAllBranches("active");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +103,32 @@ export default function AddTableModal({ onClose, onSave, initialData }: AddTable
               </div>
             </div>
           </div>
+
+          {user?.role === "admin" && (
+            <div className="space-y-2">
+              <label className="text-[12px] font-bold uppercase text-[#90A1B9]">BRANCH</label>
+              <div className="relative">
+                <select
+                  value={formData.branch_id || ""}
+                  onChange={(e) => setFormData({ ...formData, branch_id: e.target.value ? Number(e.target.value) : undefined })}
+                  className="h-12 w-full rounded-xl bg-[#F8FAFC] px-4 text-[14px] text-[#1D293D] outline-none transition-all focus:ring-2 focus:ring-primary/10 appearance-none cursor-pointer"
+                  required
+                >
+                  <option value="" disabled>Select a branch</option>
+                  {branches.map((branch: any) => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#90A1B9]">
+                  <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mt-8 flex items-center gap-4 pt-4">
             <button
