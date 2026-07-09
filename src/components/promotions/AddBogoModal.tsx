@@ -134,41 +134,11 @@ export default function AddBogoModal({
   const freeTotalSelected = selectedFreeItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleSelectBuyItem = (product: Product, variant?: any) => {
-    setSelectedBuyItems(prev => {
-      const existingIndex = prev.findIndex(i => i.product.id === product.id && i.variant?.id === variant?.id);
-      if (existingIndex > -1) {
-        // Increment if space available
-        if (buyTotalSelected < buyQty) {
-          const newItems = [...prev];
-          newItems[existingIndex].quantity += 1;
-          return newItems;
-        }
-        return prev;
-      }
-      // Add new if space available
-      if (buyTotalSelected < buyQty) {
-        return [...prev, { product, variant, quantity: 1 }];
-      }
-      return prev;
-    });
+    setSelectedBuyItems([{ product, variant, quantity: 1 }]);
   };
 
   const handleSelectFreeItem = (product: Product, variant?: any) => {
-    setSelectedFreeItems(prev => {
-      const existingIndex = prev.findIndex(i => i.product.id === product.id && i.variant?.id === variant?.id);
-      if (existingIndex > -1) {
-        if (freeTotalSelected < getQty) {
-          const newItems = [...prev];
-          newItems[existingIndex].quantity += 1;
-          return newItems;
-        }
-        return prev;
-      }
-      if (freeTotalSelected < getQty) {
-        return [...prev, { product, variant, quantity: 1 }];
-      }
-      return prev;
-    });
+    setSelectedFreeItems([{ product, variant, quantity: 1 }]);
   };
 
   const updateBuyItemQty = (index: number, delta: number) => {
