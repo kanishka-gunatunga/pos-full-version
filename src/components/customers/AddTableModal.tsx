@@ -104,7 +104,7 @@ export default function AddTableModal({ onClose, onSave, initialData }: AddTable
             </div>
           </div>
 
-          {user?.role === "admin" && (
+          {user?.user?.role === "admin" && (
             <div className="space-y-2">
               <label className="text-[12px] font-bold uppercase text-[#90A1B9]">BRANCH</label>
               <div className="relative">
