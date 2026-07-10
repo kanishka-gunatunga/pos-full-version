@@ -84,20 +84,20 @@ export default function DashboardPageHeader() {
               {currentTime}
             </span>
           </div>
-          
-          <button
-            onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`flex items-center gap-2 rounded-[14px] border px-4 py-2 transition-colors ${
-              isChatOpen 
-                ? "bg-primary border-primary text-white" 
-                : "border-[#F1F5F9] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-primary"
-            }`}
-          >
-            <Bot className="h-5 w-5" />
-            <span className={`text-sm font-bold leading-5 tracking-[-0.35px] ${isChatOpen ? "text-white" : "text-[#1D293D]"}`}>
-              Ask AI
-            </span>
-          </button>
+
+          {/*<button*/}
+          {/*  onClick={() => setIsChatOpen(!isChatOpen)}*/}
+          {/*  className={`flex items-center gap-2 rounded-[14px] border px-4 py-2 transition-colors ${*/}
+          {/*    isChatOpen */}
+          {/*      ? "bg-primary border-primary text-white" */}
+          {/*      : "border-[#F1F5F9] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-primary"*/}
+          {/*  }`}*/}
+          {/*>*/}
+          {/*  <Bot className="h-5 w-5" />*/}
+          {/*  <span className={`text-sm font-bold leading-5 tracking-[-0.35px] ${isChatOpen ? "text-white" : "text-[#1D293D]"}`}>*/}
+          {/*    Ask AI*/}
+          {/*  </span>*/}
+          {/*</button>*/}
         </div>
       </header>
 
