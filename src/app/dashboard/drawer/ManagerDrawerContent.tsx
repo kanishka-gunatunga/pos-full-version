@@ -122,11 +122,27 @@ export default function ManagerDrawerContent() {
     const cashOutsTimes = item.cashOuts?.count ?? 0;
     const diff =
       item.expected === 0 && item.actual === 0 ? null : Number((item.actual - item.expected).toFixed(2));
+
+    // Fallback logic for cashier and closedBy name if they are empty, "—", or "Unknown"
+    let cashierName = item.cashierName;
+    if ((!cashierName || cashierName === "—" || cashierName === "Unknown") && user) {
+      if (item.cashierId && String(item.cashierId) === String(user.id)) {
+        cashierName = user.name;
+      }
+    }
+
+    let closedBy = item.closedBy;
+    if ((!closedBy || closedBy === "—" || closedBy === "Unknown") && user) {
+      if (item.closedById && String(item.closedById) === String(user.id)) {
+        closedBy = user.name;
+      }
+    }
+
     return {
       id: item.id,
       cashierId: item.cashierId,
       closedAtRaw: rawEnd,
-      cashier: item.cashierName,
+      cashier: cashierName,
       date,
       startTime,
       endTime,
@@ -138,9 +154,9 @@ export default function ManagerDrawerContent() {
       expected: item.expected,
       actual: item.actual,
       difference: diff,
-      closedBy: item.closedBy,
+      closedBy: closedBy,
     };
-  }, []);
+  }, [user]);
 
   const fetchSessionHistory = useCallback(async () => {
     setIsHistoryLoading(true);
@@ -805,19 +821,19 @@ export default function ManagerDrawerContent() {
                   <th className="w-[7%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     End Time
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Initial
                   </th>
-                  <th className="w-[10%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[10%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Cash Sales
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Cash Outs
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Expected
                   </th>
-                  <th className="w-[8%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
+                  <th className="w-[8%] px-3 py-2.5 text-right font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
                     Actual
                   </th>
                   <th className="w-[10%] px-3 py-2.5 text-left font-['Inter'] text-sm font-bold leading-5 text-[#45556C]">
@@ -829,115 +845,123 @@ export default function ManagerDrawerContent() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.map((row: SessionHistoryRow) => (
-                  <tr key={row.id} className="border-b border-[#F1F5F9] bg-white">
-                    <td className="min-w-0 overflow-hidden px-3 py-2.5 font-['Inter'] text-sm font-bold leading-5 text-[#1D293D]">
-                      <span className="block truncate" title={row.cashier}>
-                        {row.cashier}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
-                      {row.date}
-                    </td>
-                    <td className="px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
-                      {row.startTime}
-                    </td>
-                    <td className="px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
-                      {row.endTime}
-                    </td>
-                    <td className="min-w-0 px-3 py-2.5 text-right">
-                      <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
-                        <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#314158]">
-                          {formatRs(row.initial)}
+                {filteredRows.length > 0 ? (
+                  filteredRows.map((row: SessionHistoryRow) => (
+                    <tr key={row.id} className="border-b border-[#F1F5F9] bg-white">
+                      <td className="min-w-0 overflow-hidden px-3 py-2.5 font-['Inter'] text-sm font-bold leading-5 text-[#1D293D]">
+                        <span className="block truncate" title={row.cashier}>
+                          {row.cashier}
                         </span>
-                      </div>
-                    </td>
-                    <td className="min-w-0 px-3 py-2.5 text-right">
-                      <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
-                        <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#8200DB]">
-                          {formatRs(row.cashSales)}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 font-['Inter'] text-xs font-normal leading-4 text-[#AD46FF]">
-                        {row.cashSalesOrders} orders
-                      </p>
-                    </td>
-                    <td className="min-w-0 px-3 py-2.5 text-right">
-                      <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
-                        <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#EA580C]">
-                          {formatRs(row.cashOuts)}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 font-['Inter'] text-xs font-normal leading-4 text-[#62748E]">
-                        {row.cashOutsTimes} times
-                      </p>
-                    </td>
-                    <td className="min-w-0 px-3 py-2.5 text-right">
-                      <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
-                        <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#1447E6]">
-                          {formatRs(row.expected)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="min-w-0 px-3 py-2.5 text-right">
-                      <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
-                        <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#007A55]">
-                          {formatRs(row.actual)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="min-w-0 px-3 py-2.5">
-                      {row.difference === null ||
-                      (typeof row.difference === "number" && Math.abs(row.difference) < 0.01) ? (
-                        <span className="inline-flex h-[30px] items-center gap-1.5 rounded-[10px] border border-[#A4F4CF] bg-[#D0FAE5] px-2.5 py-1">
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="shrink-0 text-[#007A55]"
-                            aria-hidden
-                          >
-                            <path
-                              d="M11.6668 3.5L5.25016 9.91667L2.3335 7"
-                              stroke="currentColor"
-                              strokeWidth="1.75"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          <span className="font-['Inter'] text-sm font-bold leading-5 text-[#007A55]">
-                            Balanced
-                          </span>
-                        </span>
-                      ) : row.difference > 0 ? (
-                        <div className="badge-amount-scroll scrollbar-subtle max-w-full overflow-x-auto">
-                          <span className="inline-flex min-w-0 items-center gap-1.5 rounded-[10px] border border-[#BEDBFF] bg-[#DBEAFE] px-2 py-1">
-                            <TrendingUp className="h-3 w-3 shrink-0 text-[#1447E6]" />
-                            <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#1447E6]">
-                              Rs.+{row.difference.toFixed(2)}
-                            </span>
+                      </td>
+                      <td className="px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
+                        {row.date}
+                      </td>
+                      <td className="px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
+                        {row.startTime}
+                      </td>
+                      <td className="px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
+                        {row.endTime}
+                      </td>
+                      <td className="min-w-0 px-3 py-2.5 text-right">
+                        <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
+                          <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#314158]">
+                            {formatRs(row.initial)}
                           </span>
                         </div>
-                      ) : (
-                        <div className="badge-amount-scroll scrollbar-subtle max-w-full overflow-x-auto">
-                          <span className="inline-flex min-w-0 items-center gap-1.5 rounded-[10px] border border-[#FFC9C9] bg-[#FFE2E2] px-2 py-1">
-                            <TrendingDown className="h-3 w-3 shrink-0 text-[#C10007]" />
-                            <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#C10007]">
-                              Rs.{row.difference.toFixed(2)}
-                            </span>
+                      </td>
+                      <td className="min-w-0 px-3 py-2.5 text-right">
+                        <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
+                          <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#8200DB]">
+                            {formatRs(row.cashSales)}
                           </span>
                         </div>
-                      )}
-                    </td>
-                    <td className="min-w-0 overflow-hidden px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
-                      <span className="block truncate" title={row.closedBy}>
-                        {row.closedBy}
-                      </span>
+                        <p className="mt-0.5 font-['Inter'] text-xs font-normal leading-4 text-[#AD46FF]">
+                          {row.cashSalesOrders} orders
+                        </p>
+                      </td>
+                      <td className="min-w-0 px-3 py-2.5 text-right">
+                        <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
+                          <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#EA580C]">
+                            {formatRs(row.cashOuts)}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 font-['Inter'] text-xs font-normal leading-4 text-[#62748E]">
+                          {row.cashOutsTimes} times
+                        </p>
+                      </td>
+                      <td className="min-w-0 px-3 py-2.5 text-right">
+                        <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
+                          <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#1447E6]">
+                            {formatRs(row.expected)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="min-w-0 px-3 py-2.5 text-right">
+                        <div className="scrollbar-subtle ml-auto max-w-full overflow-x-auto">
+                          <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#007A55]">
+                            {formatRs(row.actual)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="min-w-0 px-3 py-2.5">
+                        {row.difference === null ||
+                        (typeof row.difference === "number" && Math.abs(row.difference) < 0.01) ? (
+                          <span className="inline-flex h-[30px] items-center gap-1.5 rounded-[10px] border border-[#A4F4CF] bg-[#D0FAE5] px-2.5 py-1">
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 14 14"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="shrink-0 text-[#007A55]"
+                              aria-hidden
+                            >
+                              <path
+                                d="M11.6668 3.5L5.25016 9.91667L2.3335 7"
+                                stroke="currentColor"
+                                strokeWidth="1.75"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <span className="font-['Inter'] text-sm font-bold leading-5 text-[#007A55]">
+                              Balanced
+                            </span>
+                          </span>
+                        ) : row.difference > 0 ? (
+                          <div className="badge-amount-scroll scrollbar-subtle max-w-full overflow-x-auto">
+                            <span className="inline-flex min-w-0 items-center gap-1.5 rounded-[10px] border border-[#BEDBFF] bg-[#DBEAFE] px-2 py-1">
+                              <TrendingUp className="h-3 w-3 shrink-0 text-[#1447E6]" />
+                              <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#1447E6]">
+                                Rs.+{row.difference.toFixed(2)}
+                              </span>
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="badge-amount-scroll scrollbar-subtle max-w-full overflow-x-auto">
+                            <span className="inline-flex min-w-0 items-center gap-1.5 rounded-[10px] border border-[#FFC9C9] bg-[#FFE2E2] px-2 py-1">
+                              <TrendingDown className="h-3 w-3 shrink-0 text-[#C10007]" />
+                              <span className="whitespace-nowrap font-['Inter'] text-sm font-bold leading-5 text-[#C10007]">
+                                Rs.{row.difference.toFixed(2)}
+                              </span>
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="min-w-0 overflow-hidden px-3 py-2.5 font-['Inter'] text-sm font-normal leading-5 text-[#45556C]">
+                        <span className="block truncate" title={row.closedBy}>
+                          {row.closedBy}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={11} className="py-8 text-center font-['Inter'] text-sm text-[#62748E]">
+                      No data available
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -957,7 +981,7 @@ export default function ManagerDrawerContent() {
                 </h3>
               </div>
               <div className="space-y-3 font-['Inter']">
-                <div className="flex h-14 w-full max-w-[399px] items-center justify-between rounded-2xl bg-[#F8FAFC] px-4">
+                <div className="flex h-14 w-full items-center justify-between rounded-2xl bg-[#F8FAFC] px-4">
                   <span className="font-['Inter'] text-sm font-normal leading-5 text-[#62748E]">
                     Session Started
                   </span>
@@ -965,7 +989,7 @@ export default function ManagerDrawerContent() {
                     {sessionData?.startedAt ?? activeSessionDetail?.startedAt ?? "—"}
                   </span>
                 </div>
-                <div className="flex h-14 w-full max-w-[399px] items-center justify-between gap-2 rounded-2xl bg-[#F8FAFC] px-4">
+                <div className="flex h-14 w-full items-center justify-between gap-2 rounded-2xl bg-[#F8FAFC] px-4">
                   <span className="shrink-0 font-['Inter'] text-sm font-normal leading-5 text-[#62748E]">
                     Initial Amount
                   </span>
@@ -989,7 +1013,7 @@ export default function ManagerDrawerContent() {
                     </button>
                   </div>
                 </div>
-                <div className="flex h-[58px] w-full max-w-[399px] items-center justify-between rounded-2xl border border-[#A4F4CF] bg-[#ECFDF5] px-4">
+                <div className="flex h-[58px] w-full items-center justify-between rounded-2xl border border-[#A4F4CF] bg-[#ECFDF5] px-4">
                   <span className="font-['Inter'] text-sm font-bold leading-5 text-[#007A55]">
                     Status
                   </span>
@@ -1049,7 +1073,7 @@ export default function ManagerDrawerContent() {
                 <button
                   type="button"
                   onClick={() => setIsCashOutModalOpen(true)}
-                  className="flex h-[60px] w-full max-w-[399px] items-center justify-between rounded-2xl border-2 border-[#FFD6A8] bg-[#FFF7ED] px-4 transition-all duration-300 ease-out hover:opacity-90"
+                  className="flex h-[60px] w-full items-center justify-between rounded-2xl border-2 border-[#FFD6A8] bg-[#FFF7ED] px-4 transition-all duration-300 ease-out hover:opacity-90"
                 >
                   <span className="flex items-center gap-2">
                     <svg
@@ -1097,7 +1121,7 @@ export default function ManagerDrawerContent() {
                 <button
                   type="button"
                   onClick={() => setIsCloseSessionModalOpen(true)}
-                  className="flex h-[60px] w-full max-w-[399px] items-center justify-between rounded-2xl border-2 border-[#FFC9C9] bg-[#FEF2F2] px-4 transition-all duration-300 ease-out hover:opacity-90"
+                  className="flex h-[60px] w-full items-center justify-between rounded-2xl border-2 border-[#FFC9C9] bg-[#FEF2F2] px-4 transition-all duration-300 ease-out hover:opacity-90"
                 >
                   <span className="flex items-center gap-2">
                     <svg
@@ -1138,7 +1162,7 @@ export default function ManagerDrawerContent() {
                 <button
                   type="button"
                   onClick={() => setIsCloseDrawerModalOpen(true)}
-                  className="flex h-[60px] w-full max-w-[399px] items-center justify-between rounded-2xl border-2 border-[#FFC9EF] bg-[#FEF2FC] px-4 transition-all duration-300 ease-out hover:opacity-90"
+                  className="flex h-[60px] w-full items-center justify-between rounded-2xl border-2 border-[#FFC9EF] bg-[#FEF2FC] px-4 transition-all duration-300 ease-out hover:opacity-90"
                 >
                   <span className="flex items-center gap-2">
                     <svg
@@ -1209,7 +1233,7 @@ export default function ManagerDrawerContent() {
                   cashOutHistory.map((entry, i) => (
                     <div
                       key={`${entry.dateTime}-${entry.amount}-${i}`}
-                      className="flex min-h-[78px] w-full max-w-[399px] items-center justify-between gap-2 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3"
+                      className="flex min-h-[78px] w-full items-center justify-between gap-2 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3"
                     >
                       <div className="min-w-0">
                         <p className="font-['Inter'] text-base font-bold leading-6 text-[#1D293D]">

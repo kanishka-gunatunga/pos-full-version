@@ -70,7 +70,14 @@ export default function OrderDetailsViewModal({
   const totalAmount = Number.isFinite(totalAmountRaw) ? totalAmountRaw : 0;
   const itemCount = items.reduce((sum, i) => sum + i.qty, 0);
   const orderTypeLabel = order.orderType ?? "Dine In";
-  const paymentStatusLabel = formatPaymentStatusLabel(order.paymentStatus);
+  let paymentStatusLabel = formatPaymentStatusLabel(order.paymentStatus);
+  if (
+    order.paymentStatus === "paid" &&
+    order.totalPaidForOrder != null &&
+    order.totalPaidForOrder > totalAmount + MONEY_EPS
+  ) {
+    paymentStatusLabel = "Refund";
+  }
   const tableLabel = order.tableName || order.tableNumber ? `Table ${order.tableName || order.tableNumber}` : "";
   const amountToCollect = collectibleOrderAmount(order);
 

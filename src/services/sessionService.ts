@@ -448,6 +448,7 @@ export async function getSessionHistory(): Promise<SessionHistoryItem[]> {
 export interface AllHistorySession {
   id: number;
   cashierId?: number;
+  closedById?: number;
   cashierName: string;
   date: string;
   startTime: string;
@@ -465,10 +466,41 @@ export interface AllHistorySession {
 export function normalizeAllHistorySession(raw: Record<string, unknown>): AllHistorySession {
   const cashSales = raw.cashSales as { amount?: number; count?: number } | undefined;
   const cashOuts = raw.cashOuts as { amount?: number; count?: number } | undefined;
+
+  // Resolve cashier name
+  let cashierName = "";
+  const cashierUser = (raw.user ?? raw.User ?? raw.cashierUser ?? raw.cashier) as SessionUserInfo | undefined;
+  if (cashierUser && typeof cashierUser === "object") {
+    cashierName = sessionUserDisplayName(cashierUser);
+  }
+  if ((!cashierName || cashierName === "—" || cashierName.toLowerCase() === "unknown") && typeof raw.cashierName === "string" && raw.cashierName.trim()) {
+    cashierName = raw.cashierName.trim();
+  }
+  if ((!cashierName || cashierName === "—" || cashierName.toLowerCase() === "unknown") && typeof raw.cashier === "string" && raw.cashier.trim()) {
+    cashierName = raw.cashier.trim();
+  }
+  if (!cashierName || cashierName.toLowerCase() === "unknown") {
+    cashierName = "—";
+  }
+
+  // Resolve closedBy name
+  let closedBy = "";
+  const closedByUser = (raw.closedByUser ?? raw.ClosedByUser ?? raw.closed_by_user) as SessionUserInfo | undefined;
+  if (closedByUser && typeof closedByUser === "object") {
+    closedBy = sessionUserDisplayName(closedByUser);
+  }
+  if ((!closedBy || closedBy === "—" || closedBy.toLowerCase() === "unknown") && typeof raw.closedBy === "string" && raw.closedBy.trim()) {
+    closedBy = raw.closedBy.trim();
+  }
+  if (!closedBy || closedBy.toLowerCase() === "unknown") {
+    closedBy = "—";
+  }
+
   return {
     id: Number(raw.id),
-    cashierId: raw.cashierId != null ? Number(raw.cashierId) : undefined,
-    cashierName: String(raw.cashierName ?? "").trim() || "—",
+    cashierId: raw.cashierId != null ? Number(raw.cashierId) : raw.userId != null ? Number(raw.userId) : undefined,
+    closedById: raw.closedById != null ? Number(raw.closedById) : raw.closedByUserId != null ? Number(raw.closedByUserId) : closedByUser?.id != null ? Number(closedByUser.id) : undefined,
+    cashierName,
     date: String(raw.date ?? ""),
     startTime: String(raw.startTime ?? ""),
     endTime: raw.endTime != null ? String(raw.endTime) : null,
@@ -485,7 +517,7 @@ export function normalizeAllHistorySession(raw: Record<string, unknown>): AllHis
     actual: Number(raw.actual) || 0,
     difference: Number(raw.difference) || 0,
     discrepancy: raw.discrepancy as AllHistorySession["discrepancy"],
-    closedBy: String(raw.closedBy ?? "").trim() || "—",
+    closedBy,
   };
 }
 

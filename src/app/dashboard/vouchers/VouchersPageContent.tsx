@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Calendar,
+  ChevronDown,
   DollarSign,
   Gift,
   Package,
@@ -244,16 +245,19 @@ export default function VouchersPageContent({
               </div>
               <div className="flex shrink-0 items-center gap-2 lg:justify-end">
                 <span className="font-['Inter'] text-[13px] font-medium text-[#62748E]">Status:</span>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                  className="h-11 min-w-[140px] appearance-none rounded-[14px] border-2 border-[#E2E8F0] bg-white py-2.5 pl-4 pr-10 text-[14px] text-[#1D293D] outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
-                >
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="redeemed">Redeemed</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                    className="h-11 min-w-[140px] appearance-none rounded-[14px] border-2 border-[#E2E8F0] bg-white py-2.5 pl-4 pr-10 text-[14px] text-[#1D293D] outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  >
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="redeemed">Redeemed</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#90A1B9]" />
+                </div>
               </div>
             </div>
           </div>

@@ -20,7 +20,7 @@ import {
 } from "@/hooks/useDiscount";
 import NewOrderDetailsModal from "./NewOrderDetailsModal";
 import ManualDiscountModal from "./ManualDiscountModal";
-import ProcessPaymentModal from "./ProcessPaymentModal";
+import ProcessPaymentModal from "../payments/ProcessPaymentModal";
 import type { OrderDetailsData, OrderItem, OrderDetailsModalMode } from "@/contexts/OrderContext";
 import type { CreateOrderData, Order } from "@/types/order";
 import {
@@ -1099,20 +1099,29 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
 
       {paymentFlow && (
         <ProcessPaymentModal
-          customerName={paymentFlow.customerName}
-          customerMobile={paymentFlow.customerMobile ?? orderDetails?.phone}
-          amountDue={paymentFlow.settlementAmount}
-          orderId={paymentFlow.orderId}
-          customerId={orderDetails?.customerId}
-          loyaltyPoints={customerData?.loyalty_points}
-          onClose={() => {
-            setPaymentFlow(null);
-            setCheckoutLockedOrderSlotId(null);
+          payment={{
+            id: paymentFlow.orderId as number,
+            orderNo: paymentFlow.orderId as number,
+            customerName: paymentFlow.customerName,
+            customerMobile: paymentFlow.customerMobile || "",
+            amount: paymentFlow.settlementAmount,
+            dateTime: new Date().toISOString(),
+            method: null,
+            paymentStatus: "pending"
           }}
-          onComplete={() => {
-            clearCheckoutSession(paymentFlow.localOrderId ?? null);
-            setPaymentFlow(null);
-            setPendingPaymentOrder(null);
+          onClose={(completed) => {
+            if (completed) {
+              setPaymentFlow(null);
+              clearOrderById(activeOrderId || paymentFlow.localOrderId || "");
+              setPendingPaymentOrder(null);
+              savePendingPaymentFlow(null);
+              setCheckoutLockedOrderSlotId(null);
+            } else {
+              setPaymentFlow(null);
+              setPendingPaymentOrder(null);
+              savePendingPaymentFlow(null);
+              setCheckoutLockedOrderSlotId(null);
+            }
           }}
         />
       )}

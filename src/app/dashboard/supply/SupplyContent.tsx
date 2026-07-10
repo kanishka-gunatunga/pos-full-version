@@ -830,6 +830,9 @@ export default function SupplyContent() {
                           <th className="px-4 py-3 font-['Inter'] text-sm font-medium leading-5 text-[#0A0A0A]">
                             Branches
                           </th>
+                          <th className="px-4 py-3 font-['Inter'] text-sm font-medium leading-5 text-[#0A0A0A]">
+                            Min Stock Level
+                          </th>
                           <th className="px-4 py-3 text-right font-['Inter'] text-sm font-medium leading-5 text-[#0A0A0A]">
                             Actions
                           </th>
@@ -838,13 +841,13 @@ export default function SupplyContent() {
                       <tbody className="divide-y divide-[#F1F5F9]">
                         {materialsLoading ? (
                           <tr>
-                            <td colSpan={6} className="px-4 py-8 text-center font-['Inter'] text-sm text-[#62748E]">
+                            <td colSpan={7} className="px-4 py-8 text-center font-['Inter'] text-sm text-[#62748E]">
                               Loading materials...
                             </td>
                           </tr>
                         ) : materials.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="px-4 py-12 text-center font-['Inter'] text-sm text-[#62748E]">
+                            <td colSpan={7} className="px-4 py-12 text-center font-['Inter'] text-sm text-[#62748E]">
                               <p className="font-medium text-[#45556C]">No materials found</p>
                               <p className="mt-1 text-[#90A1B9]">
                                 Try a different search, category, or branch filter.
@@ -885,6 +888,25 @@ export default function SupplyContent() {
                                     ))}
                                 </div>
                               )}
+                            </td>
+                            <td className="px-4 py-3 font-['Inter'] text-sm font-normal leading-5 text-[#0A0A0A]">
+                              {(() => {
+                                let value: string | number | undefined = row.minStockValue;
+                                let unit = row.minStockUnit || row.unit;
+
+                                if (selectedMaterialBranch !== "all") {
+                                  const branchMin = row.perBranchMinStocks?.find(
+                                    (b) => b.branchId === Number(selectedMaterialBranch)
+                                  );
+                                  if (branchMin) {
+                                    value = branchMin.minStockValue;
+                                    unit = branchMin.minStockUnit;
+                                  }
+                                }
+
+                                if (value === undefined || value === null) return "-";
+                                return `${formatQuantityValue(Number(value))} ${unit || ""}`.trim();
+                              })()}
                             </td>
                             <td className="px-4 py-3 text-right">
                               <div className="flex items-center justify-end gap-2">
