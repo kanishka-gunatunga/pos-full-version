@@ -64,7 +64,7 @@ export default function CreatedVouchersPageContent({
 
       const validityLabel = data.validityMonths === 6 ? "6 months" : "12 months";
       const payload = {
-        valueFormatted: data.valueFormatted,
+        value: data.value,
         validityLabel,
         imageUrl,
       };
@@ -203,7 +203,7 @@ export default function CreatedVouchersPageContent({
                     <tr key={row.id} className="transition-colors hover:bg-[#F8FAFC]">
                       <td className="px-4 py-4 align-middle">
                         <span className="font-['Inter'] text-[14px] font-bold text-[#1D293D]">
-                          {row.valueFormatted}
+                          Rs. {row.value.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         </span>
                       </td>
                       <td className="px-4 py-4 align-middle">

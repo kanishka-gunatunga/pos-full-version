@@ -353,7 +353,7 @@ export default function VouchersPageContent({
                       </td>
                       <td className="px-3 py-3 align-top">
                         <span className="font-['Inter'] text-[13px] font-bold leading-5 text-[#1D293D]">
-                          {row.valueFormatted}
+                          Rs. {row.value.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         </span>
                       </td>
                       <td className="px-3 py-3 align-top">

@@ -12,7 +12,7 @@ export interface IssuedVoucherRow {
   code: string;
   createdAt: string;
   barcode: string;
-  valueFormatted: string;
+  value: number;
   validityLabel: string;
   expiryDate: string;
   issuedToName: string | null;
@@ -26,7 +26,7 @@ export type CreatedVoucherTemplateStatus = "active" | "inactive" | "redeemed";
 
 export interface CreatedVoucherTemplate {
   id: string;
-  valueFormatted: string;
+  value: number;
   imageUrl: string;
   validityLabel: string;
   status: CreatedVoucherTemplateStatus;

@@ -43,21 +43,15 @@ function isVoucherMenuItem(item: MenuItem): boolean {
 }
 
 const DUMMY_VOUCHER_ITEMS: MenuItem[] = [
-  { id: "voucher-2000", productId: 910001, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 2000, image: "/voucer-img.png" },
-  { id: "voucher-3000", productId: 910002, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 3000, image: "/voucer-img.png" },
-  { id: "voucher-5000", productId: 910003, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 5000, image: "/voucer-img.png" },
-  { id: "voucher-6000", productId: 910004, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 6000, image: "/voucer-img.png" },
-  { id: "voucher-8000", productId: 910005, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 8000, image: "/voucer-img.png" },
-  { id: "voucher-10000", productId: 910006, name: "Gift Voucher", category: "Vouchers", subCategory: "All", price: 10000, image: "/voucer-img.png" },
+  { id: "voucher-2000", productId: 910001, name: "Rs. 2,000.00 Voucher", category: "Vouchers", subCategory: "All", price: 2000, image: "/voucer-img.png" },
+  { id: "voucher-3000", productId: 910002, name: "Rs. 3,000.00 Voucher", category: "Vouchers", subCategory: "All", price: 3000, image: "/voucer-img.png" },
+  { id: "voucher-5000", productId: 910003, name: "Rs. 5,000.00 Voucher", category: "Vouchers", subCategory: "All", price: 5000, image: "/voucer-img.png" },
+  { id: "voucher-6000", productId: 910004, name: "Rs. 6,000.00 Voucher", category: "Vouchers", subCategory: "All", price: 6000, image: "/voucer-img.png" },
+  { id: "voucher-8000", productId: 910005, name: "Rs. 8,000.00 Voucher", category: "Vouchers", subCategory: "All", price: 8000, image: "/voucer-img.png" },
+  { id: "voucher-10000", productId: 910006, name: "Rs. 10,000.00 Voucher", category: "Vouchers", subCategory: "All", price: 10000, image: "/voucer-img.png" },
 ];
 
-/**
- * Parse the numeric value from a formatted string like "Rs.2000.00" or "2,000"
- */
-function parseVoucherPrice(valueFormatted: string): number {
-  const cleaned = valueFormatted.replace(/[^0-9.]/g, "");
-  return parseFloat(cleaned) || 0;
-}
+// parseVoucherPrice removed
 
 function mapTemplatesToMenuItems(templates: CreatedVoucherTemplate[]): MenuItem[] {
   return templates
@@ -65,10 +59,10 @@ function mapTemplatesToMenuItems(templates: CreatedVoucherTemplate[]): MenuItem[
     .map((t, idx) => ({
       id: `vt-${t.id}`,
       productId: 910000 + idx + 1, // stable synthetic productId
-      name: `Gift Voucher`,
+      name: `Rs. ${t.value.toLocaleString("en-US", { minimumFractionDigits: 2 })} Voucher`,
       category: "Vouchers",
       subCategory: "All",
-      price: parseVoucherPrice(t.valueFormatted),
+      price: t.value,
       image: t.imageUrl && !t.imageUrl.startsWith("blob:") ? t.imageUrl : "/voucer-img.png",
       // Store templateId so order creation can reference it
       voucherTemplateId: t.id,

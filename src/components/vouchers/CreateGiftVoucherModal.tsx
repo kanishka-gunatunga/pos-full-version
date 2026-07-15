@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import type { CreatedVoucherTemplate } from "@/domains/vouchers/types";
 
 export type CreateGiftVoucherPayload = {
-  valueFormatted: string;
+  value: number;
   validityMonths: 6 | 12;
   imageFile: File | null;
 };
@@ -24,20 +24,11 @@ type CreateGiftVoucherModalProps = {
   onSave: (data: GiftVoucherSavePayload) => void;
 };
 
-function formatVoucherValue(input: string): string {
-  const trimmed = input.trim();
-  if (!trimmed) return "";
-  const hasPrefix = /^rs\.?\s*/i.test(trimmed);
-  const numeric = trimmed.replace(/[^\d.]/g, "");
-  const num = parseFloat(numeric);
-  if (!Number.isNaN(num) && numeric !== "") {
-    const formatted = `Rs. ${num.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-    return formatted;
-  }
-  return hasPrefix ? trimmed : `Rs. ${trimmed}`;
+function formatVoucherValue(input: string | number): string {
+  const str = String(input).trim();
+  if (!str) return "";
+  const numeric = str.replace(/[^\d.]/g, "");
+  return numeric;
 }
 
 function initialValidityMonths(t: CreatedVoucherTemplate | null): 6 | 12 {
@@ -51,7 +42,7 @@ export default function CreateGiftVoucherModal({
   editingTemplate,
   onSave,
 }: CreateGiftVoucherModalProps) {
-  const [value, setValue] = useState(() => editingTemplate?.valueFormatted ?? "");
+  const [value, setValue] = useState(() => editingTemplate?.value?.toString() ?? "");
   const [validityMonths, setValidityMonths] = useState<6 | 12>(() =>
     initialValidityMonths(editingTemplate)
   );
@@ -100,9 +91,8 @@ export default function CreateGiftVoucherModal({
       toast.error("Enter a valid voucher amount");
       return;
     }
-    const valueFormatted = formatVoucherValue(trimmed);
     onSave({
-      valueFormatted,
+      value: num,
       validityMonths,
       imageFile,
       ...(editingTemplate ? { templateId: editingTemplate.id } : {}),
@@ -163,7 +153,7 @@ export default function CreateGiftVoucherModal({
                 type="text"
                 value={value}
                 onChange={(ev) => setValue(ev.target.value)}
-                placeholder="Rs. 2000.00"
+                placeholder="2000"
                 autoComplete="off"
                 className="h-11 w-full rounded-[14px] border-2 border-[#E2E8F0] bg-white px-4 font-['Inter'] text-sm text-[#1D293D] placeholder:text-[#94A3B8] outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
               />
