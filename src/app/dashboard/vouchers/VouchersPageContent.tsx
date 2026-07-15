@@ -320,6 +320,9 @@ export default function VouchersPageContent({
                       Issued to
                     </th>
                     <th className="px-3 py-3 font-['Inter'] text-[11px] font-bold uppercase leading-4 tracking-[0.5px] text-[#45556C] sm:text-[12px]">
+                      Issued by
+                    </th>
+                    <th className="px-3 py-3 font-['Inter'] text-[11px] font-bold uppercase leading-4 tracking-[0.5px] text-[#45556C] sm:text-[12px]">
                       Branch
                     </th>
                     <th className="px-3 py-3 font-['Inter'] text-[11px] font-bold uppercase leading-4 tracking-[0.5px] text-[#45556C] sm:text-[12px]">
@@ -381,6 +384,11 @@ export default function VouchersPageContent({
                         ) : (
                           <span className="text-[#90A1B9]">—</span>
                         )}
+                      </td>
+                      <td className="px-3 py-3 align-top">
+                        <span className="font-['Inter'] text-[13px] font-medium leading-5 text-[#314158]">
+                          {row.issuedByName || <span className="text-[#90A1B9]">—</span>}
+                        </span>
                       </td>
                       <td className="px-3 py-3 align-top">
                         <span className="font-['Inter'] text-[13px] leading-5 text-[#314158]">
@@ -450,7 +458,7 @@ export default function VouchersPageContent({
                   {filteredRows.length === 0 && (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={10}
                         className="px-4 py-16 text-center font-['Inter'] text-[14px] text-[#90A1B9]"
                       >
                         No vouchers match your filters.

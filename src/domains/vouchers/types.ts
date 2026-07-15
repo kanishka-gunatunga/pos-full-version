@@ -18,6 +18,7 @@ export interface IssuedVoucherRow {
   issuedToName: string | null;
   issuedToPhone: string | null;
   branchName: string;
+  issuedByName?: string | null;
   status: IssuedVoucherStatus;
 }
 
