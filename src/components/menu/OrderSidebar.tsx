@@ -240,7 +240,7 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
     };
   }, [pendingPaymentOrder, pendingPaymentOrder?.orderId, pendingPaymentOrder?.localOrderId, clearCheckoutSession]);
 
-  const { data: discountsData } = useGetAllDiscounts({ status: "active" });
+  const { data: discountsData } = useGetAllDiscounts({ status: "active", excludeExpired: "true" });
   const discounts = discountsData || [];
   const { data: customerData } = useGetCustomerByMobile(activeOrderDetails?.phone || "");
 

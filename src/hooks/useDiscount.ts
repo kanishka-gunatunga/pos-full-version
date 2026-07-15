@@ -11,7 +11,7 @@ export const DISCOUNT_KEYS = {
   detail: (id: number) => [...DISCOUNT_KEYS.details(), id] as const,
 };
 
-export const useGetAllDiscounts = (params: { status?: string; search?: string } = {}) => {
+export const useGetAllDiscounts = (params: { status?: string; search?: string; excludeExpired?: string } = {}) => {
   return useQuery({
     queryKey: DISCOUNT_KEYS.list(params),
     queryFn: () => discountService.getAllDiscounts(params),
@@ -89,6 +89,12 @@ export const findApplicableDiscount = (
 
   for (const discount of discounts) {
     if (discount.status !== "active") continue;
+    
+    // Check if discount is expired
+    if (discount.expiryDate) {
+      const today = new Date().toISOString().split('T')[0];
+      if (discount.expiryDate < today) continue;
+    }
 
     const matchedItem = discount.items?.find((di) => {
       if (di.variationOptionId) {
