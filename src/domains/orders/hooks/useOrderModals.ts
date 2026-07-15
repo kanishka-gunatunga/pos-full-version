@@ -261,7 +261,8 @@ export function useOrderModals(options?: UseOrderModalsOptions) {
         });
         const originalTotal = Number(modalOrder.totalAmount || 0);
         const updatedTotal = Number(updatedOrder.totalAmount || 0);
-        const refundAmount = originalTotal - updatedTotal;
+        const totalPaid = Number(modalOrder.totalPaidForOrder ?? originalTotal);
+        const refundAmount = Math.max(0, totalPaid - updatedTotal);
         const additionalDue = updatedTotal - originalTotal;
         const shouldRecordRefund = refundAmount > MONEY_EPS && additionalDue <= MONEY_EPS;
 
