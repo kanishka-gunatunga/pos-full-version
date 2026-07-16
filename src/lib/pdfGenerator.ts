@@ -86,6 +86,7 @@ function generateGenericReport(data: any[], config: ReportConfig) {
                              headerText.includes('subtotal') || 
                              headerText.includes('discount') || 
                              headerText.includes('tax') ||
+                             headerText.includes('total') ||
                              headerText.includes('(rs)');
       if (isRightAligned) {
         cellData.cell.styles.halign = 'right';
