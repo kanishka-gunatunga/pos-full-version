@@ -454,6 +454,8 @@ export default function OrderSidebar({ onEditItem }: { onEditItem?: (item: Order
                   notes: `Recipient${item.recipientName ? `: ${item.recipientName}` : ""}${
                     item.recipientMobile ? ` ${item.recipientMobile}` : ""
                   }`,
+                  recipientName: item.recipientName || undefined,
+                  recipientMobile: item.recipientMobile || undefined,
                 }
               : {}),
           };
