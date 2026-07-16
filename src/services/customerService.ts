@@ -73,7 +73,7 @@ export const getLoyaltyPointsByMobile = async (mobile: string): Promise<{
   mobile: string;
   loyaltyPoints: number;
 }> => {
-  const res = await axiosInstance.get(`/customers/loyalty-points/${mobile}`);
+  const res = await axiosInstance.get(`/customers/loyalty/${mobile}`);
   return res.data;
 };
 
