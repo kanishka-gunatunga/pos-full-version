@@ -62,7 +62,6 @@ export default function LoginForm() {
     else router.replace(ROUTES.DASHBOARD);
   }, [sessionStatus, user, token, router, fromLogout, fromIdle, fromSessionExpired, loginSuccess]);
 
-
   useEffect(() => {
     if (sessionStatus !== "authenticated" || user) return;
     setError(ERROR_MESSAGES.ROLE_NOT_SUPPORTED);
@@ -91,6 +90,11 @@ export default function LoginForm() {
       );
 
       if (result?.error) {
+        console.error("[login debug] signIn failed:", {
+          error: result.error,
+          ok: result.ok,
+          status: result.status,
+        });
         const msg = ERROR_MESSAGES[result.error] ?? ERROR_MESSAGES.SERVER_ERROR;
         setError(msg);
         return;
@@ -103,8 +107,10 @@ export default function LoginForm() {
         return;
       }
 
+      console.error("[login debug] signIn unexpected response:", result);
       setError(ERROR_MESSAGES.SERVER_ERROR);
     } catch (err) {
+      console.error("[login debug] signIn threw:", err);
       const message = err instanceof Error ? err.message : "SERVER_ERROR";
       const msg = ERROR_MESSAGES[message] ?? ERROR_MESSAGES.SERVER_ERROR;
       setError(msg);

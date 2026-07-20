@@ -2,7 +2,6 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { LoginResponse } from "@/types/auth";
 
-
 const BACKEND_AUTH_ERRORS = new Set([
   "MISSING_FIELDS",
   "INVALID_CREDENTIALS",
@@ -17,10 +16,11 @@ async function loginWithBackend(
   employeeId: string,
   password: string
 ): Promise<LoginResponse | null> {
-    const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000")
+  const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000")
     .trim()
     .replace(/\/+$/, "")
     .replace(/\/api$/i, "");
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), BACKEND_FETCH_TIMEOUT_MS);
 
@@ -34,6 +34,16 @@ async function loginWithBackend(
     clearTimeout(timeoutId);
 
     if (!res.ok) {
+      let body = "";
+      try {
+        body = await res.text();
+      } catch {
+        /* ignore */
+      }
+      console.error("[login debug] backend login HTTP error:", {
+        status: res.status,
+        body: body.slice(0, 300),
+      });
       if (res.status === 400) throw new Error("MISSING_FIELDS");
       if (res.status === 401) throw new Error("INVALID_CREDENTIALS");
       if (res.status === 403) throw new Error("ACCOUNT_INACTIVE");
@@ -44,6 +54,7 @@ async function loginWithBackend(
     return res.json() as Promise<LoginResponse>;
   } catch (err) {
     clearTimeout(timeoutId);
+    console.error("loginWithBackend error:", err);
     if (err instanceof Error && err.name === "AbortError") {
       throw new Error("SERVER_ERROR");
     }
@@ -69,7 +80,10 @@ export const authOptions: NextAuthOptions = {
             String(credentials.employeeId),
             String(credentials.password)
           );
-          if (!data?.token || !data?.user) return null;
+          if (!data?.token || !data?.user) {
+            console.error("[login debug] backend login 200 but missing token or user");
+            return null;
+          }
           return {
             id: String(data.user.id),
             email: data.user.email ?? undefined,
@@ -81,6 +95,7 @@ export const authOptions: NextAuthOptions = {
             token: data.token,
           };
         } catch (err) {
+          console.error("NextAuth authorize error:", err);
           if (err instanceof Error && BACKEND_AUTH_ERRORS.has(err.message)) {
             throw err;
           }
